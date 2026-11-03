@@ -1,0 +1,892 @@
+# Practical: Implementation of Inverted Indexing for Information Retrieval
+
+## 1. AIM
+
+To implement an **Inverted Index** using Python and NLTK to retrieve relevant documents based on a user's search query.
+
+The practical involves:
+1. Creating a collection of documents.
+2. Converting text into lowercase.
+3. Extracting individual words using regular expressions.
+4. Removing stop words.
+5. Creating an inverted index.
+6. Searching documents using a user query.
+7. Displaying the retrieved documents.
+
+---
+
+# 2. Concepts Used in This Practical
+
+### 1. Information Retrieval (IR)
+
+Information Retrieval is the process of finding relevant documents or information from a large collection based on a user's search query.
+
+**Example:** When you search for "Python programming" on Google, it retrieves webpages related to Python programming.
+
+### 2. Inverted Index
+
+An inverted index is a data structure that stores each word along with the list of documents in which that word appears.
+
+It works in the opposite way to a normal document index.
+
+**Example:**
+
+Suppose we have two documents:
+
+- Document 1: Python is easy.
+- Document 2: Python is popular.
+
+The inverted index will be:
+
+| Word | Document IDs |
+|---|---|
+| Python | 1, 2 |
+| easy | 1 |
+| popular | 2 |
+
+**Why is it used?**
+
+Instead of checking every document word by word during a search, the system directly looks up the word in the inverted index.
+
+This makes document searching faster and more efficient.
+
+### 3. Regular Expressions (Regex)
+
+Regular expressions are patterns used to search, extract or manipulate text.
+
+In this practical, regex extracts only lowercase English words.
+
+Example:
+
+```text
+"Hello! Python 123"
+```
+
+Output:
+
+```text
+['hello', 'python']
+```
+
+### 4. Stop Word Removal
+
+Stop words are commonly used words that generally carry less importance for many information retrieval tasks.
+
+Examples: `is`, `the`, `a`, `and`, `for`, `in`.
+
+These words are removed to avoid storing unnecessary terms in the inverted index.
+
+### 5. defaultdict
+
+`defaultdict` is a special dictionary provided by Python's `collections` module.
+
+It automatically creates a default value when a new key is accessed.
+
+In this practical:
+
+```python
+inverted_index = defaultdict(list)
+```
+
+It automatically creates an empty list for a new word.
+
+**Example:**
+
+When the word `"information"` is accessed for the first time, Python automatically creates:
+
+```python
+'information': []
+```
+
+We can then add document IDs to that list.
+
+### 6. Document Retrieval
+
+Document retrieval means finding and displaying documents that contain the words entered by the user.
+
+For example, if the user searches for `"information"`, the system retrieves all documents containing that word.
+
+---
+
+# 3. Line-by-Line Code Explanation
+
+## Step 1: Importing Libraries
+
+**Line 1:**
+`import nltk`
+
+- Imports the NLTK library.
+- NLTK stands for Natural Language Toolkit.
+- It is used for Natural Language Processing tasks.
+
+**External question: What is NLTK?**
+
+Answer: NLTK is a Python library used for processing and analyzing human language.
+
+**Line 2:**
+`import re`
+
+- Imports Python's regular expression module.
+- It is used to identify and extract words from text.
+- Here, it helps extract only alphabetic words.
+
+**External question: What is Regex?**
+
+Answer: Regex stands for Regular Expression. It is used to identify patterns in text.
+
+**Line 3:**
+`from collections import defaultdict`
+
+- Imports `defaultdict` from Python's collections module.
+- It works like a normal dictionary but automatically creates a default value for a missing key.
+- Here, it creates an empty list for every new word in the inverted index.
+
+**External question: What is defaultdict?**
+
+Answer: It is a dictionary that automatically assigns a default value to a key when the key does not exist.
+
+## Step 2: Downloading Stop Words
+
+**Line 4:**
+`nltk.download('stopwords')`
+
+- Downloads the stopwords dataset from NLTK.
+- This dataset contains commonly used words in different languages.
+- We use the English stop words in this practical.
+
+**External question: Why do we download stopwords?**
+
+Answer: To identify and remove commonly used words from documents and search queries.
+
+## Step 3: Importing Stop Words
+
+**Line 5:**
+`from nltk.corpus import stopwords`
+
+- Imports the stopwords corpus from NLTK.
+- It allows us to access the list of English stop words.
+
+**Line 6:**
+`documents = { ... }`
+
+This creates a dictionary containing four documents.
+
+Each document has:
+- A document ID as the key.
+- The document text as the value.
+
+For example:
+
+```python
+1: "Information retrieval is used to search relevant documents"
+```
+
+Here:
+- `1` is the document ID.
+- The sentence is the document content.
+
+**External question: Why are documents stored in a dictionary?**
+
+Answer: A dictionary stores each document with a unique ID, making it easy to retrieve the original document using its ID.
+
+**Important:** In this practical, we use four sample documents instead of retrieving documents from an external database.
+
+## Step 4: Loading Stop Words
+
+**Line 7:**
+`stop_words = set(stopwords.words('english'))`
+
+- `stopwords.words('english')` retrieves the English stop words.
+- `set()` converts the stop words into a set.
+- A set allows faster membership checking.
+
+**Example:**
+
+Words such as `is`, `are`, `the`, `for` and `in` can be removed from the documents.
+
+**External question: Why use set() here?**
+
+Answer: A set provides efficient checking to determine whether a word is present in the stop words collection.
+
+## Step 5: Creating an Empty Inverted Index
+
+**Line 8:**
+`inverted_index = defaultdict(list)`
+
+- Creates an empty inverted index.
+- Each word will be stored as a key.
+- The corresponding value will be a list of document IDs.
+- `defaultdict(list)` automatically creates an empty list when a new word is encountered.
+
+**Example:**
+
+Initially:
+
+```python
+defaultdict(list, {})
+```
+
+After processing a word:
+
+```python
+'information': [1, 2, 4]
+```
+
+This means the word `"information"` appears in documents 1, 2 and 4.
+
+**External question: What is the difference between a normal dictionary and defaultdict?**
+
+Answer: In a normal dictionary, accessing a missing key can produce a KeyError. In defaultdict, a default value is automatically created for a missing key.
+
+## Step 6: Iterating Through Documents
+
+**Line 9:**
+`for doc_id, text in documents.items():`
+
+- Starts a for loop to process every document.
+- `documents.items()` returns the document ID and its text together.
+- `doc_id` stores the document number.
+- `text` stores the document content.
+
+**Example:**
+
+For the first iteration:
+
+```text
+doc_id = 1
+text = "Information retrieval is used to search relevant documents"
+```
+
+The loop continues until all four documents are processed.
+
+**External question: What does items() do?**
+
+Answer: The `items()` method returns dictionary elements as key-value pairs.
+
+## Step 7: Extracting Words from Documents
+
+**Line 10:**
+`words = re.findall(r'\b[a-z]+\b', text.lower())`
+
+This is an important line.
+
+It performs two operations:
+
+**1. `text.lower()`**
+
+- Converts the document text into lowercase.
+- Ensures consistent word representation.
+
+Example:
+
+`"Information Retrieval"` becomes `"information retrieval"`.
+
+**2. `re.findall()`**
+
+- Finds all occurrences matching a given regular expression.
+- Returns the matching words as a list.
+
+Understanding the pattern:
+
+| Pattern | Meaning |
+|---|---|
+| `r` | Raw string |
+| `\b` | Word boundary |
+| `[a-z]` | Any lowercase English letter |
+| `+` | One or more occurrences |
+| `\b` | Ending word boundary |
+
+**Example:**
+
+Input:
+
+```text
+"Information Retrieval 123!"
+```
+
+Output:
+
+```python
+['information', 'retrieval']
+```
+
+Numbers and punctuation are ignored.
+
+**External question: What is the difference between findall() and sub()?**
+
+Answer:
+- `findall()` extracts all matching patterns and returns them in a list.
+- `sub()` replaces matching patterns with another value.
+
+## Step 8: Removing Duplicate Words
+
+**Line 11:**
+`for word in set(words):`
+
+- Converts the list of words into a set.
+- Removes duplicate words within the same document.
+- Iterates through each unique word.
+
+**Example:**
+
+Original list:
+
+```python
+['information', 'retrieval', 'information']
+```
+
+After converting into a set:
+
+```python
+{'information', 'retrieval'}
+```
+
+Why is this important?
+
+If a word appears multiple times in the same document, its document ID should generally be stored only once in the inverted index.
+
+**External question: Why do we use set(words)?**
+
+Answer: To avoid storing the same document ID multiple times for a word appearing repeatedly in one document.
+
+## Step 9: Checking Stop Words
+
+**Line 12:**
+`if word not in stop_words:`
+
+- Checks whether the current word is not present in the stop words set.
+- If it is not a stop word, the condition becomes true.
+- Stop words are ignored.
+
+**Example:**
+
+If the word is `"is"`, it is a stop word, so it will not be added to the inverted index.
+
+If the word is `"information"`, it is not a stop word, so it will be added.
+
+## Step 10: Building the Inverted Index
+
+**Line 13:**
+`inverted_index[word].append(doc_id)`
+
+- Adds the current document ID to the list associated with the word.
+- If the word is encountered for the first time, `defaultdict(list)` creates an empty list automatically.
+- `append()` adds the document ID to that list.
+
+**Example:**
+
+Suppose `"retrieval"` appears in documents 1, 2 and 4.
+
+The inverted index becomes:
+
+```python
+'retrieval': [1, 2, 4]
+```
+
+**External question: What is the main purpose of this line?**
+
+Answer: It builds the inverted index by associating each unique word with the IDs of documents containing that word.
+
+## Step 11: Displaying the Inverted Index
+
+**Line 14:**
+`print("Inverted Index:")`
+
+- Displays the heading.
+
+**Line 15:**
+`for word, doc_ids in sorted(inverted_index.items()):`
+
+- Retrieves all word-document ID pairs.
+- `sorted()` arranges the entries alphabetically by word.
+- `word` stores the current word.
+- `doc_ids` stores the list of document IDs.
+
+**External question: Why is sorted() used?**
+
+Answer: To display the inverted index in alphabetical order for better readability.
+
+**Line 16:**
+`print(word, ":", doc_ids)`
+
+- Displays each word followed by its corresponding document IDs.
+
+Example:
+
+```text
+information : [1, 2, 4]
+retrieval : [1, 2, 4]
+```
+
+## Step 12: Taking Search Query from User
+
+**Line 17:**
+`query = input("\nEnter search query: ").lower()`
+
+- `input()` accepts a search query from the user.
+- `\n` displays the input prompt on a new line.
+- `lower()` converts the query into lowercase.
+- Stores the query in the variable `query`.
+
+Example:
+
+User enters:
+
+```text
+Information Retrieval
+```
+
+Stored value:
+
+```text
+information retrieval
+```
+
+**External question: Why convert the query into lowercase?**
+
+Answer: To maintain consistency between the query words and the words stored in the inverted index.
+
+## Step 13: Extracting Words from the Query
+
+**Line 18:**
+`query_words = re.findall(r'\b[a-z]+\b', query)`
+
+- Extracts individual words from the user's query.
+- Uses the same regular expression used for document processing.
+- Stores the extracted words in a list.
+
+Example:
+
+Input:
+
+```text
+"Information Retrieval!"
+```
+
+Output:
+
+```python
+['information', 'retrieval']
+```
+
+**External question: Why use the same regex for documents and queries?**
+
+Answer: To maintain consistent text processing so that the query words can match the terms in the inverted index.
+
+## Step 14: Creating an Empty Set for Retrieved Documents
+
+**Line 19:**
+`retrieved_docs = set()`
+
+- Creates an empty set.
+- Stores the IDs of documents that match the query.
+- A set automatically avoids duplicate document IDs.
+
+**External question: Why use a set here?**
+
+Answer: Because a document may contain multiple query words, but its ID should appear only once in the final retrieved results.
+
+## Step 15: Searching for Query Words
+
+**Line 20:**
+`for word in query_words:`
+
+- Starts a loop through every word in the user's query.
+- Searches for each query word separately.
+
+**Line 21:**
+`if word in inverted_index:`
+
+- Checks whether the query word exists as a key in the inverted index.
+- If it exists, the system retrieves its associated document IDs.
+- If it does not exist, that word is ignored.
+
+**External question: What happens if a query word is not found?**
+
+Answer: The condition becomes false, so no document IDs are added for that word.
+
+## Step 16: Retrieving Matching Document IDs
+
+**Line 22:**
+`retrieved_docs.update(inverted_index[word])`
+
+- Retrieves the list of document IDs associated with the query word.
+- `update()` adds all those IDs to the `retrieved_docs` set.
+- Duplicate IDs are automatically avoided.
+
+**Example:**
+
+Suppose:
+
+```python
+information = [1, 2, 4]
+retrieval = [1, 2, 4]
+```
+
+After searching both words:
+
+```python
+retrieved_docs = {1, 2, 4}
+```
+
+**External question: What is the difference between add() and update() in a set?**
+
+Answer:
+- `add()` inserts one element into a set.
+- `update()` inserts multiple elements from an iterable into a set.
+
+## Step 17: Displaying Retrieved Documents
+
+**Line 23:**
+`print("\nRetrieved Documents:")`
+
+- Displays the heading for the search results.
+
+**Line 24:**
+`if retrieved_docs:`
+
+- Checks whether the retrieved document set contains any elements.
+- If documents are found, the condition is true.
+
+**Line 25:**
+`for doc_id in sorted(retrieved_docs):`
+
+- Iterates through the retrieved document IDs.
+- `sorted()` arranges the IDs in ascending order.
+
+**Line 26:**
+`print("Document", doc_id, ":", documents[doc_id])`
+
+- Uses the document ID to access the original document from the `documents` dictionary.
+- Displays the document ID and its complete text.
+
+**External question: Why do we use documents[doc_id]?**
+
+Answer: To retrieve the original text corresponding to the document ID stored in the inverted index.
+
+## Step 18: Handling No Search Results
+
+**Line 27:**
+`else:`
+
+- Executes when no matching documents are found.
+- This happens when none of the query words exists in the inverted index.
+
+**Line 28:**
+`print("No documents found.")`
+
+- Displays a message indicating that no matching documents were retrieved.
+
+## Step 19: Displaying Total Retrieved Documents
+
+**Line 29:**
+`print("\nTotal Retrieved Documents:", len(retrieved_docs))`
+
+- `len()` calculates the number of unique document IDs in the retrieved set.
+- Displays the total number of retrieved documents.
+
+**Example:**
+
+If:
+
+```python
+retrieved_docs = {1, 2, 4}
+```
+
+Output:
+
+```text
+Total Retrieved Documents: 3
+```
+
+---
+
+# 4. Complete Output Explanation
+
+The program contains four sample documents.
+
+### Documents Used
+
+| Document ID | Document Text |
+|---|---|
+| 1 | Information retrieval is used to search relevant documents |
+| 2 | Document retrieval helps users find information |
+| 3 | Inverted files are used for efficient document searching |
+| 4 | Information processing improves document retrieval |
+
+### Step 1: Inverted Index Output
+
+After removing stop words and duplicate words within each document, the inverted index will be:
+
+```text
+Inverted Index:
+document : [1, 2, 3, 4]
+efficient : [3]
+files : [3]
+find : [2]
+helps : [2]
+improves : [4]
+information : [1, 2, 4]
+inverted : [3]
+processing : [4]
+relevant : [1]
+retrieval : [1, 2, 4]
+search : [1]
+searching : [3]
+used : [1, 3]
+users : [2]
+```
+
+**How to understand this output?**
+
+For example:
+
+`information : [1, 2, 4]`
+
+This means the word information appears in documents 1, 2 and 4.
+
+Similarly:
+
+`efficient : [3]`
+
+This means the word efficient appears only in document 3.
+
+### Step 2: User Enters a Search Query
+
+Suppose the user enters:
+
+```text
+Enter search query: information retrieval
+```
+
+The program extracts:
+
+```python
+['information', 'retrieval']
+```
+
+### Step 3: Searching the Inverted Index
+
+The inverted index contains:
+
+```text
+information : [1, 2, 4]
+retrieval : [1, 2, 4]
+```
+
+The program retrieves the document IDs for both words.
+
+The retrieved set becomes:
+
+```python
+{1, 2, 4}
+```
+
+### Step 4: Displaying Retrieved Documents
+
+```text
+Retrieved Documents:
+
+Document 1 : Information retrieval is used to search relevant documents
+Document 2 : Document retrieval helps users find information
+Document 4 : Information processing improves document retrieval
+
+Total Retrieved Documents: 3
+```
+
+### What Does This Result Mean?
+
+The system retrieves documents containing **at least one** of the query words.
+
+For the query `"information retrieval"`:
+
+- Document 1 contains both words.
+- Document 2 contains both words.
+- Document 4 contains both words.
+- Document 3 contains neither word.
+
+Therefore, documents 1, 2 and 4 are retrieved.
+
+**Important:** This program uses OR-based retrieval, not AND-based retrieval. It retrieves a document if it contains at least one query word.
+
+---
+
+# 5. Complete AIM-Based Theory
+
+### Q1. What is an Inverted Index?
+
+An inverted index is a data structure that maps each unique term to the list of document IDs in which that term appears.
+
+It is commonly used in search engines to retrieve relevant documents efficiently.
+
+### Q2. Why is an Inverted Index used?
+
+It improves search efficiency because the system can directly find documents associated with a search term instead of scanning every document.
+
+### Q3. What is the difference between a Forward Index and an Inverted Index?
+
+| Forward Index | Inverted Index |
+|---|---|
+| Maps documents to their words. | Maps words to their documents. |
+| Stores words against each document. | Stores document IDs against each word. |
+| Document → Words | Word → Documents |
+| Example: Doc 1 → Python, AI | Example: Python → Doc 1, Doc 2 |
+
+### Q4. What is a Posting List?
+
+A posting list is the list of document IDs associated with a particular word in an inverted index.
+
+Example:
+
+```text
+information : [1, 2, 4]
+```
+
+Here, `[1, 2, 4]` is the posting list.
+
+### Q5. What is a Term?
+
+A term is an individual word or token extracted from a document and stored in the index.
+
+Example: `information`, `retrieval`, `document`.
+
+### Q6. What is a Document ID?
+
+A Document ID is a unique identifier assigned to each document.
+
+In this practical, the IDs are 1, 2, 3 and 4.
+
+### Q7. What is the difference between AND and OR retrieval?
+
+| AND Retrieval | OR Retrieval |
+|---|---|
+| Retrieves documents containing all query words. | Retrieves documents containing at least one query word. |
+| More restrictive. | Less restrictive. |
+| Uses intersection. | Uses union. |
+
+**Example:**
+
+Query: `information retrieval`
+
+- AND: Only documents containing both words.
+- OR: Documents containing information OR retrieval.
+
+**Our practical uses OR retrieval.**
+
+### Q8. What is the role of Stop Word Removal in Information Retrieval?
+
+It removes frequently occurring words that may not contribute much to search relevance, reducing the number of terms stored in the index.
+
+### Q9. What are the applications of Inverted Indexing?
+
+1. Search engines.
+2. Digital libraries.
+3. Document search systems.
+4. E-commerce product search.
+5. Enterprise document management.
+6. Information retrieval systems.
+
+### Q10. Does this program rank documents according to relevance?
+
+No. This program only retrieves documents based on matching query words. It does not calculate relevance scores or rank documents by importance.
+
+### Q11. What happens if the user enters a word that does not exist in the index?
+
+The word is ignored. If none of the query words match, the program displays `"No documents found."`
+
+### Q12. What is the difference between an Inverted Index and a Database?
+
+A database stores structured information and supports different types of queries. An inverted index is a specialized data structure designed to efficiently search text terms and identify documents containing them.
+
+---
+
+# 6. External Viva Questions and Answers
+
+| No. | Question | Answer |
+|---|---|---|
+| 1 | What is Information Retrieval? | Finding relevant information from a collection of documents. |
+| 2 | What is an Inverted Index? | A structure that maps words to document IDs. |
+| 3 | Which data structure is used here? | Dictionary with lists, implemented using defaultdict. |
+| 4 | Which library is used for NLP? | NLTK. |
+| 5 | What is defaultdict? | A dictionary that automatically creates default values for missing keys. |
+| 6 | What is a posting list? | A list of document IDs associated with a word. |
+| 7 | What is the use of re.findall()? | Extracts all matching words from text. |
+| 8 | What does `\b` mean? | Word boundary. |
+| 9 | What does `[a-z]+` mean? | One or more lowercase English letters. |
+| 10 | Why use lower()? | To maintain consistent word representation. |
+| 11 | Why remove stop words? | To eliminate common words that may add little search value. |
+| 12 | Why use set(words)? | To avoid duplicate word entries within a document. |
+| 13 | What does append() do? | Adds an element to a list. |
+| 14 | What does update() do? | Adds multiple elements to a set. |
+| 15 | Why use sorted()? | To display results in an ordered manner. |
+| 16 | What does items() return? | Key-value pairs from a dictionary. |
+| 17 | What does len() do? | Returns the number of elements. |
+| 18 | What is OR-based retrieval? | Retrieves documents containing at least one query term. |
+| 19 | What is AND-based retrieval? | Retrieves documents containing all query terms. |
+| 20 | Does this practical rank documents? | No, it only retrieves matching documents. |
+| 21 | What is a search query? | The words entered by a user to find relevant documents. |
+| 22 | What is a forward index? | A structure mapping each document to its words. |
+| 23 | Where is inverted indexing used? | Search engines and document retrieval systems. |
+| 24 | What happens if no documents match? | The program displays "No documents found." |
+| 25 | What is the main advantage of inverted indexing? | Faster text searching without scanning every document for every query. |
+
+---
+
+# 7. Important Differences for Viva
+
+| Concept | Meaning | Example |
+|---|---|---|
+| Information Retrieval | Finding relevant documents | Google Search |
+| Inverted Index | Maps words to document IDs | Python → [1, 2] |
+| Forward Index | Maps documents to words | Doc 1 → Python, AI |
+| Posting List | Document IDs for a word | [1, 2, 4] |
+| Token | Individual word | information |
+| Stop Word | Common word removed during preprocessing | is, the, and |
+| OR Retrieval | At least one query word must match | A OR B |
+| AND Retrieval | All query words must match | A AND B |
+| defaultdict | Dictionary with automatic default values | defaultdict(list) |
+| Regex | Pattern-based text processing | `\b[a-z]+\b` |
+
+---
+
+# 8. Quick Revision Before Practical
+
+| Code / Function | Purpose |
+|---|---|
+| `import nltk` | Imports NLP library |
+| `import re` | Imports regular expression module |
+| `defaultdict(list)` | Creates an inverted index |
+| `stopwords.words('english')` | Retrieves English stop words |
+| `set()` | Removes duplicates / enables efficient membership checks |
+| `documents.items()` | Retrieves document ID and text |
+| `text.lower()` | Converts text into lowercase |
+| `re.findall()` | Extracts matching words |
+| `append()` | Adds a document ID to a posting list |
+| `sorted()` | Sorts words or document IDs |
+| `input()` | Accepts the search query |
+| `update()` | Adds multiple IDs to a set |
+| `documents[doc_id]` | Retrieves original document text |
+| `len()` | Counts retrieved documents |
+
+---
+
+# 9. Explain This Practical to the External Examiner
+
+You can explain it like this:
+
+"This practical implements an Inverted Index for Information Retrieval using Python. First, we create a collection of four sample documents and load English stop words using NLTK. Then, we process each document by converting it into lowercase and extracting individual words using regular expressions. We remove stop words and duplicate words within each document. After that, we create an inverted index using defaultdict, which maps each unique word to the document IDs in which it appears. Finally, we accept a search query from the user, extract its words, search them in the inverted index and retrieve the matching documents. This practical uses OR-based retrieval, meaning a document is retrieved if it contains at least one query word."
+
+---
+
+## 10. Important Technical Points to Remember
+
+1. **Inverted Index:** Maps words to document IDs.
+2. **defaultdict(list):** Automatically creates an empty list for new words.
+3. **re.findall():** Extracts words using a regular expression.
+4. **set(words):** Prevents duplicate document IDs for repeated words in one document.
+5. **stopwords:** Removes common English words.
+6. **update():** Adds matching document IDs to the result set.
+7. **OR Retrieval:** Retrieves documents containing at least one query word.
+8. **No Ranking:** The program does not calculate relevance scores.
+
+**One important limitation:** This implementation does not apply stemming or lemmatization. Therefore, words such as `search` and `searching` are treated as different terms. Also, because it uses OR retrieval, a document matching only one query word is still returned.

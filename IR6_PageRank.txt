@@ -1,0 +1,780 @@
+# Practical: PageRank Algorithm Using NetworkX
+
+## 1. AIM
+
+To implement the PageRank Algorithm using Python and NetworkX to calculate the importance of web pages in a directed graph and rank them according to their PageRank scores.
+
+The practical involves:
+
+1. Creating a directed graph.
+2. Adding directed edges between nodes.
+3. Calculating PageRank scores using the PageRank algorithm.
+4. Ranking pages according to their importance.
+5. Visualizing the directed graph using NetworkX and Matplotlib.
+
+# 2. Concepts Used in This Practical
+
+### 1. Graph
+
+A graph is a mathematical structure consisting of:
+
+- Vertices (Nodes): Represent objects.
+- Edges: Represent connections between objects.
+
+Example: In a website network, each webpage is represented by a node and each hyperlink is represented by an edge.
+
+### 2. Directed Graph
+
+A directed graph is a graph in which edges have a specific direction.
+
+For example:
+
+\\[ A \rightarrow B \\]
+
+This means page A links to page B.
+
+But it does not necessarily mean page B links back to page A.
+
+External question: What is the difference between directed and undirected graphs?
+
+| Directed Graph            | Undirected Graph              |
+| ------------------------- | ----------------------------- |
+| Edges have directions.    | Edges do not have directions. |
+| Represented using arrows. | Represented using lines.      |
+| Example: Webpage links.   | Example: Mutual friendship.   |
+
+### 3. PageRank Algorithm
+
+PageRank is an algorithm originally developed by Google co-founders Larry Page and Sergey Brin to measure the importance of webpages.
+
+It determines the importance of a webpage based on the links pointing towards it.
+
+Main idea: A webpage is considered important if other important webpages link to it.
+
+For example:
+
+- If page A links to page B, page B receives a contribution to its PageRank.
+- If an important page links to another page, that link carries more importance.
+- A page receiving links from several important pages can achieve a high PageRank score.
+
+### 4. Basic PageRank Formula
+
+\\[ PR(A)=\frac{1-d}{N} +d\sum\_{T_i\rightarrow A}\frac{PR(T_i)}{C(T_i)} \\]
+
+Where:
+
+| Symbol       | Meaning                                      |
+| ------------ | -------------------------------------------- |
+| \\(PR(A)\\)  | PageRank of page A                           |
+| \\(d\\)      | Damping factor                               |
+| \\(N\\)      | Total number of pages                        |
+| \\(T_i\\)    | Pages linking to page A                      |
+| \\(C(T_i)\\) | Number of outgoing links from page \\(T_i\\) |
+
+### 5. Damping Factor
+
+The damping factor represents the probability that a user continues clicking links rather than jumping to a random webpage.
+
+In this practical:
+
+\\[ d=0.85 \\]
+
+This means:
+
+- 85% probability of following a link.
+- 15% probability of jumping to a random page.
+
+Why is the damping factor used?
+
+It prevents the PageRank calculation from depending only on link structure and helps handle situations such as pages with no outgoing links.
+
+### 6. In-degree and Out-degree
+
+In-degree: Number of incoming edges to a node.
+
+Out-degree: Number of outgoing edges from a node.
+
+Example:
+
+If:
+
+\\[ A\rightarrow B,\quad A\rightarrow C \\]
+
+Then:
+
+- Out-degree of A = 2.
+- In-degree of B = 1.
+- In-degree of C = 1.
+
+External question: Which is more important in PageRank, in-degree or out-degree?
+
+Answer: Both the number and importance of incoming links matter. PageRank also considers how the linking pages distribute their scores among their outgoing links.
+
+### 7. NetworkX
+
+NetworkX is a Python library used to create, manipulate, analyze and visualize graphs and networks.
+
+It supports:
+
+- Directed graphs.
+- Undirected graphs.
+- Graph algorithms.
+- Centrality calculations.
+- PageRank.
+
+### 8. Graph Visualization
+
+Graph visualization means representing nodes and edges graphically.
+
+In this practical:
+
+- Nodes represent webpages.
+- Arrows represent hyperlinks.
+- The direction of an arrow indicates the direction of the link.
+
+# 3. Line-by-Line Code Explanation
+
+## Step 1: Importing Libraries
+
+Line 1:
+
+`import networkx as nx`
+
+- Imports the NetworkX library.
+- Used to create graphs and perform graph algorithms.
+- `nx` is an alias for NetworkX.
+
+External question: What is NetworkX?
+
+Answer: NetworkX is a Python library used to create, analyze and visualize graphs and networks.
+
+Line 2:
+
+`import matplotlib.pyplot as plt`
+
+- Imports the Pyplot module from Matplotlib.
+- Used to visualize the directed graph.
+- `plt` is an alias for Pyplot.
+
+## Step 2: Creating a Directed Graph
+
+Line 3:
+
+`G = nx.DiGraph()`
+
+- Creates an empty directed graph.
+- Stores it in variable `G`.
+- `DiGraph()` stands for Directed Graph.
+- It allows edges to have directions.
+
+External question: What is DiGraph()?
+
+Answer: `DiGraph()` creates a directed graph in NetworkX where edges have a source and destination.
+
+## Step 3: Adding Edges to the Graph
+
+Line 4–12:
+
+```
+G.add_edges_from([    ("A", "B"),    ("A", "C"),    ("B", "C"),    ("C", "A"),    ("D", "C"),    ("D", "A"),    ("E", "C")])
+```
+
+- `add_edges_from()` adds multiple edges to the graph.
+- Each tuple represents one directed edge.
+- The first element is the source node.
+- The second element is the destination node.
+
+Understanding each edge:
+
+| Edge  | Meaning                 |
+| ----- | ----------------------- |
+| A → B | Page A links to page B. |
+| A → C | Page A links to page C. |
+| B → C | Page B links to page C. |
+| C → A | Page C links to page A. |
+| D → C | Page D links to page C. |
+| D → A | Page D links to page A. |
+| E → C | Page E links to page C. |
+
+The graph contains five nodes:
+
+A, B, C, D and E.
+
+It contains seven directed edges.
+
+External question: What is an edge?
+
+Answer: An edge represents a connection between two nodes.
+
+External question: What is a node?
+
+Answer: A node is an individual element or vertex in a graph.
+
+## Step 4: Displaying the Algorithm Name
+
+Line 13:
+
+`print("Page Rank Algorithm")`
+
+\- Displays the heading of the practical.
+
+## Step 5: Displaying Directed Graph Edges
+
+Line 14:
+
+`print("\nDirected Graph Edges:")`
+
+- Displays the heading for the graph edges.
+- `\n` inserts a new line before the heading.
+
+Line 15:
+
+`print(list(G.edges()))`
+
+- `G.edges()` returns all directed edges in the graph.
+- `list()` converts the edge collection into a list.
+- `print()` displays the list.
+
+Expected output:
+
+```
+Directed Graph Edges:
+[('A', 'B'), ('A', 'C'), ('B', 'C'),
+ ('C', 'A'), ('D', 'C'), ('D', 'A'),
+ ('E', 'C')]
+```
+
+External question: What does G.edges() return?
+
+Answer: It returns all the edges present in the graph, including their directions.
+
+## Step 6: Calculating PageRank Scores
+
+Line 16:
+
+`pagerank = nx.pagerank(G, alpha=0.85)`
+
+This is the most important line in the practical.
+
+- `nx.pagerank()` applies the PageRank algorithm.
+- `G` is the directed graph.
+- `alpha=0.85` specifies the damping factor.
+- The calculated PageRank scores are stored in the `pagerank` variable.
+
+The output is a dictionary containing each node and its PageRank score.
+
+Example structure:
+
+```
+{
+    'A': score,
+    'B': score,
+    'C': score,
+    'D': score,
+    'E': score
+}
+```
+
+External question: What is alpha?
+
+Answer: Alpha is the damping factor. In this practical, it is 0.85.
+
+External question: Why is 0.85 used?
+
+Answer: It is the commonly used default damping factor in PageRank. It represents an 85% probability of following a link and a 15% probability of randomly jumping to another page.
+
+External question: What does PageRank return?
+
+Answer: It returns a dictionary containing the PageRank score of every node.
+
+## Step 7: Displaying PageRank Scores
+
+Line 17:
+
+`print("\nPage Rank Scores:")`
+
+\- Displays the heading for PageRank scores.
+
+Line 18:
+
+`for page, rank in sorted(pagerank.items()):`
+
+This line performs three operations:
+
+1. `pagerank.items()` returns node-score pairs.
+2. `sorted()` sorts these pairs by page name by default.
+3. `for` iterates through each page and its score.
+
+Here:
+
+- `page` represents the node name.
+- `rank` represents its PageRank score.
+
+Line 19:
+
+`print(page, ":", round(rank, 4))`
+
+- Displays the page name and its PageRank score.
+- `round(rank, 4)` rounds the score to four decimal places.
+
+Example:
+
+```
+Page Rank Scores:
+A : 0.XXXXX
+B : 0.XXXXX
+C : 0.XXXXX
+D : 0.XXXXX
+E : 0.XXXXX
+```
+
+The actual values are calculated by NetworkX.
+
+External question: What is round()?
+
+Answer: `round()` is a Python function used to round a numerical value to a specified number of decimal places.
+
+## Step 8: Displaying Pages According to Rank
+
+Line 20:
+
+`print("\nPages Ranked According to Page Rank:")`
+
+\- Displays the heading for ranked pages.
+
+Line 21–25:
+
+```
+ranked_pages = sorted(    pagerank.items(),    key=lambda x: x[1],    reverse=True)
+```
+
+This line sorts pages according to their PageRank scores.
+
+Understanding each parameter:
+
+1\. `pagerank.items()`
+
+Returns pairs containing page names and their PageRank scores.
+
+Example:
+
+```
+[('A', 0.20), ('B', 0.10)]
+```
+
+These values are only an example.
+
+2\. `key=lambda x: x[1]`
+
+- Specifies that sorting should be performed using the second element of each pair.
+- `x[0]` represents the page name.
+- `x[1]` represents the PageRank score.
+- `lambda` creates a small anonymous function.
+
+3\. `reverse=True`
+
+- Sorts the scores in descending order.
+- The page with the highest PageRank appears first.
+
+External question: Why is reverse=True used?
+
+Answer: To arrange pages from highest PageRank score to lowest PageRank score.
+
+External question: What is lambda?
+
+Answer: Lambda is used to create a small anonymous function without defining it using `def`.
+
+Line 26–27:
+
+```
+for page, rank in ranked_pages:    print(page, ":", round(rank, 4))
+```
+
+- Iterates through the sorted pages.
+- Displays each page and its PageRank score.
+- The highest-ranked page appears first.
+
+## Step 9: Creating a Figure
+
+Line 28:
+
+`plt.figure(figsize=(8, 6))`
+
+- Creates a new figure.
+- Width = 8 inches.
+- Height = 6 inches.
+
+## Step 10: Calculating Node Positions
+
+Line 29:
+
+`pos = nx.spring_layout(G, seed=42)`
+
+- Calculates positions for graph nodes.
+- `spring_layout()` uses a force-directed layout.
+- Connected nodes are positioned based on simulated attractive and repulsive forces.
+- `seed=42` makes the layout reproducible.
+
+External question: What is spring_layout()?
+
+Answer: It is a NetworkX layout algorithm that positions graph nodes using a force-directed approach.
+
+External question: Why is seed=42 used?
+
+Answer: It makes the randomly initialized layout reproducible, so the graph tends to appear in the same arrangement each time.
+
+## Step 11: Drawing the Graph
+
+Line 30–37:
+
+```
+nx.draw(    G,    pos,    with_labels=True,    node_color="lightblue",    node_size=2000,    font_size=12,    arrows=True)
+```
+
+This function draws the directed graph.
+
+Understanding each parameter:
+
+| Parameter                | Meaning                                  |
+| ------------------------ | ---------------------------------------- |
+| `G`                      | Graph to be drawn.                       |
+| `pos`                    | Positions of graph nodes.                |
+| `with_labels=True`       | Displays node names.                     |
+| `node_color="lightblue"` | Sets node colour to light blue.          |
+| `node_size=2000`         | Sets the node size.                      |
+| `font_size=12`           | Sets label font size.                    |
+| `arrows=True`            | Displays arrows to show edge directions. |
+
+External question: What is the use of arrows=True?
+
+Answer: It displays arrows on edges to indicate the direction of connections.
+
+## Step 12: Adding Graph Title
+
+Line 38:
+
+`plt.title("Page Rank Algorithm")`
+
+\- Adds the title Page Rank Algorithm to the graph.
+
+## Step 13: Displaying the Graph
+
+Line 39:
+
+`plt.show()`
+
+- Displays the final directed graph.
+- Shows nodes A, B, C, D and E.
+- Arrows represent the direction of links.
+
+# 4. Complete Output Explanation
+
+## Step 1: Directed Graph Edges
+
+```
+Page Rank Algorithm
+
+Directed Graph Edges:
+[('A', 'B'), ('A', 'C'), ('B', 'C'),
+ ('C', 'A'), ('D', 'C'), ('D', 'A'),
+ ('E', 'C')]
+```
+
+Explanation:
+
+The graph contains five nodes and seven directed edges.
+
+For example:
+
+- A points to B and C.
+- B points to C.
+- C points to A.
+- D points to C and A.
+- E points to C.
+
+## Step 2: PageRank Scores
+
+For this exact graph, the scores are approximately:
+
+```
+Page Rank Scores:
+
+A : 0.3725
+B : 0.1958
+C : 0.3587
+D : 0.0365
+E : 0.0365
+```
+
+Explanation:
+
+- Page A receives links from C and D.
+- Page B receives a link from A.
+- Page C receives links from A, B, D and E.
+- Pages D and E have no incoming links.
+
+Therefore, A and C have the highest PageRank scores, while D and E have the lowest.
+
+## Step 3: Pages Ranked According to PageRank
+
+```
+Pages Ranked According to Page Rank:
+
+A : 0.3725
+C : 0.3587
+B : 0.1958
+D : 0.0365
+E : 0.0365
+```
+
+
+
+Highest PageRank
+
+&#x20;Page A
+
+
+
+Explanation:
+
+The pages are arranged in descending order of PageRank scores.
+
+1. A has the highest score.
+2. C has the second-highest score.
+3. B has the third-highest score.
+4. D and E have equal scores.
+
+Important: PageRank scores represent relative importance, not percentages. They sum to approximately 1.
+
+## Step 4: Directed Graph Visualization
+
+[python 3.x - Networkx not drawing arrows in directed graph - Stack Overflow](https://images.openai.com/static-rsc-4/gLUE9h8614FdLU4BDG2kckV2aK9giGLWxIxZucAtirc5Qi2NDazaekC7rpSgcE62i5lNzVzz87SDeBcq4syESzCLvyuQR4DQkP5rMOZ8Pu8wfvErxjCXC86u2PB3VoIQPOGpfBrzZmY756yU7Z10Yl9uvnuFgXmYxhRxGRv5XGo?purpose=inline)
+
+[stackoverflow.com](https://stackoverflow.com/questions/66889224/networkx-not-drawing-arrows-in-directed-graph?utm_source=chatgpt.com)
+
+Explanation:
+
+- Circles represent nodes or webpages.
+- Arrows represent directed links.
+- A → B means page A links to page B.
+- A → C means page A links to page C.
+- The graph helps visualize the link structure used by PageRank.
+
+The exact node positions may differ depending on the layout.
+
+# 5. Complete AIM-Based Theory
+
+### Q1. What is the PageRank Algorithm?
+
+PageRank is a link-analysis algorithm used to measure the importance of webpages based on their incoming links and the importance of the linking pages.
+
+### Q2. Who developed PageRank?
+
+Larry Page and Sergey Brin developed PageRank at Stanford University.
+
+### Q3. What is the main purpose of PageRank?
+
+To calculate the relative importance of webpages based on their link structure.
+
+### Q4. What is the PageRank formula?
+
+\\[ PR(A)=\frac{1-d}{N} +d\sum\_{T_i\rightarrow A}\frac{PR(T_i)}{C(T_i)} \\]
+
+### Q5. What is a damping factor?
+
+It represents the probability that a user follows a link instead of randomly jumping to another webpage.
+
+### Q6. What is the standard damping factor?
+
+0.85 is the commonly used default value.
+
+### Q7. What is a directed graph?
+
+A graph in which every edge has a specific direction.
+
+### Q8. What is a node?
+
+A node represents an individual entity, such as a webpage.
+
+### Q9. What is an edge?
+
+An edge represents a connection between two nodes.
+
+### Q10. What is an incoming link?
+
+A link that points towards a particular webpage.
+
+### Q11. What is an outgoing link?
+
+A link that starts from a particular webpage and points towards another webpage.
+
+### Q12. What is the difference between in-degree and out-degree?
+
+- In-degree counts incoming edges.
+- Out-degree counts outgoing edges.
+
+### Q13. Why is PageRank important?
+
+It helps identify important webpages by considering the quality and quantity of incoming links.
+
+### Q14. Does a page with more incoming links always have a higher PageRank?
+
+No. PageRank also considers the importance of linking pages and how many outgoing links those pages have.
+
+### Q15. What is NetworkX?
+
+NetworkX is a Python library used for graph creation, analysis and visualization.
+
+### Q16. What does `nx.DiGraph()` do?
+
+It creates a directed graph.
+
+### Q17. What does `add_edges_from()` do?
+
+It adds multiple edges to a graph.
+
+### Q18. What does `nx.pagerank()` do?
+
+It calculates the PageRank score of every node in a graph.
+
+### Q19. What does `alpha=0.85` mean?
+
+It specifies a damping factor of 0.85.
+
+### Q20. What does `spring_layout()` do?
+
+It calculates positions for nodes using a force-directed layout.
+
+### Q21. What is the difference between PageRank and degree centrality?
+
+Degree centrality considers the number of connections, whereas PageRank considers the importance of incoming links and how linking pages distribute their scores.
+
+### Q22. What are the applications of PageRank?
+
+1. Search engine ranking.
+2. Website importance analysis.
+3. Social network analysis.
+4. Citation network analysis.
+5. Recommendation systems.
+6. Identifying influential nodes in networks.
+
+# 6. External Viva Questions and Answers
+
+| No. | Question                                    | Answer                                                                      |
+| --- | ------------------------------------------- | --------------------------------------------------------------------------- |
+| 1   | What is the aim of this practical?          | To calculate and rank nodes using PageRank.                                 |
+| 2   | Which library is used for graph creation?   | NetworkX.                                                                   |
+| 3   | Which library is used for visualization?    | Matplotlib.                                                                 |
+| 4   | What is PageRank?                           | An algorithm for measuring the importance of nodes based on incoming links. |
+| 5   | Who developed PageRank?                     | Larry Page and Sergey Brin.                                                 |
+| 6   | What is a directed graph?                   | A graph with directed edges.                                                |
+| 7   | What is DiGraph()?                          | It creates a directed graph.                                                |
+| 8   | What is a node?                             | An individual vertex in a graph.                                            |
+| 9   | What is an edge?                            | A connection between two nodes.                                             |
+| 10  | How many nodes are present?                 | Five.                                                                       |
+| 11  | How many edges are present?                 | Seven.                                                                      |
+| 12  | What is the damping factor?                 | Probability of following a link in the PageRank model.                      |
+| 13  | What is the default damping factor?         | 0.85.                                                                       |
+| 14  | What is the PageRank formula?               | Random jump contribution plus weighted incoming PageRank contributions.     |
+| 15  | What is in-degree?                          | Number of incoming edges.                                                   |
+| 16  | What is out-degree?                         | Number of outgoing edges.                                                   |
+| 17  | What does nx.pagerank() do?                 | Calculates PageRank scores.                                                 |
+| 18  | What does G.edges() return?                 | All directed edges.                                                         |
+| 19  | What does sorted() do?                      | Sorts elements.                                                             |
+| 20  | What does reverse=True do?                  | Sorts in descending order.                                                  |
+| 21  | What is lambda?                             | An anonymous function.                                                      |
+| 22  | What is x[1] in the sorting function?       | The PageRank score.                                                         |
+| 23  | What does round(rank, 4) do?                | Rounds the score to four decimal places.                                    |
+| 24  | What does spring_layout() do?               | Calculates graph node positions.                                            |
+| 25  | What does seed=42 do?                       | Makes layout initialization reproducible.                                   |
+| 26  | What does arrows=True do?                   | Displays directed edges with arrows.                                        |
+| 27  | Which page has the highest PageRank here?   | Page A.                                                                     |
+| 28  | Do PageRank scores sum to 1?                | Yes, for the standard normalized PageRank calculation.                      |
+| 29  | Can PageRank be applied to social networks? | Yes.                                                                        |
+| 30  | What is the main advantage of PageRank?     | It considers the importance of linking nodes, not just the number of links. |
+
+# 7. Quick Revision Table
+
+| Function / Concept   | Purpose                    |
+| -------------------- | -------------------------- |
+| `nx.DiGraph()`       | Creates a directed graph   |
+| `G.add_edges_from()` | Adds multiple edges        |
+| `G.edges()`          | Returns graph edges        |
+| `nx.pagerank()`      | Calculates PageRank scores |
+| `alpha=0.85`         | Sets damping factor        |
+| `pagerank.items()`   | Returns node-score pairs   |
+| `sorted()`           | Sorts elements             |
+| `lambda x: x[1]`     | Selects score for sorting  |
+| `reverse=True`       | Sorts in descending order  |
+| `round()`            | Rounds numerical values    |
+| `plt.figure()`       | Creates a figure           |
+| `nx.spring_layout()` | Calculates node positions  |
+| `nx.draw()`          | Draws the graph            |
+| `with_labels=True`   | Displays node labels       |
+| `node_color`         | Sets node colour           |
+| `node_size`          | Sets node size             |
+| `arrows=True`        | Displays edge directions   |
+| `plt.show()`         | Displays the graph         |
+
+# 8. Important Technical Points
+
+### 1. Why do D and E have equal PageRank scores?
+
+Both D and E have no incoming links and have no outgoing links in this graph. Under NetworkX's standard PageRank handling of dangling nodes, their scores are equal.
+
+### 2. Why does C have a high PageRank?
+
+C receives incoming links from A, B, D and E. It receives PageRank contributions from all four nodes.
+
+### 3. Why does A have the highest PageRank?
+
+A receives links from C and D. In particular, C has a high PageRank score, so its link contributes significantly to A's score.
+
+### 4. What happens if alpha is changed?
+
+Changing alpha changes the balance between following links and randomly jumping to another node. Therefore, PageRank scores may change.
+
+### 5. What happens if a node has no outgoing edges?
+
+It is called a dangling node. NetworkX handles dangling nodes by redistributing their PageRank contribution according to its dangling-node handling rules (uniformly by default).
+
+### 6. Does PageRank calculate the shortest path?
+
+No. PageRank calculates node importance. Shortest-path algorithms calculate the minimum-distance route between nodes.
+
+### 7. Is PageRank the same as counting incoming links?
+
+No. A simple incoming-link count treats all incoming links equally. PageRank considers the PageRank scores of the linking pages and their outgoing links.
+
+# 9. Explain This Practical to the External Examiner
+
+"This practical implements the PageRank Algorithm using NetworkX. First, we import NetworkX and Matplotlib and create a directed graph using DiGraph(). We add seven directed edges between five nodes representing webpages. Then, we use nx.pagerank() with a damping factor of 0.85 to calculate the importance score of each webpage. We display the scores and sort them in descending order to identify the most important page. Finally, we use spring_layout() and nx.draw() to visualize the directed graph. In our result, page A has the highest PageRank score."
+
+# 10. Most Important Questions to Prepare First
+
+Prioritize these for your external viva:
+
+1. What is PageRank?
+2. Who developed PageRank?
+3. What is the purpose of PageRank?
+4. Explain the PageRank formula.
+5. What is a damping factor?
+6. Why is alpha set to 0.85?
+7. What is a directed graph?
+8. What is the difference between in-degree and out-degree?
+9. What is the difference between PageRank and degree centrality?
+10. What does `nx.pagerank()` do?
+11. Why is NetworkX used?
+12. What does `nx.DiGraph()` do?
+13. What does `G.add_edges_from()` do?
+14. Why is `reverse=True` used?
+15. What does `lambda x: x[1]` mean?
+16. Why does a page with important incoming links get a higher PageRank?
+17. What happens to a node with no outgoing edges?
+18. What is the difference between PageRank and shortest-path algorithms?
+19. Which page has the highest PageRank in this practical?
+20. What are the applications of PageRank?
+
+Most important concept
+
+Remember the workflow: Create a directed graph → add edges → calculate PageRank scores → sort pages by importance → visualize the graph.

@@ -1,0 +1,1519 @@
+# Practical: Heart Disease Prediction Using Bayesian Network
+
+## 1. AIM
+
+To implement a **Discrete Bayesian Network** using Python and the `pgmpy` library to predict the presence or absence of heart disease based on patient medical records.
+
+The practical involves:
+1. Loading and preprocessing the heart disease dataset.
+2. Handling missing values.
+3. Converting continuous numerical features into categorical values.
+4. Creating a Bayesian Network model.
+5. Learning conditional probability distributions using Bayesian Estimation.
+6. Performing probabilistic inference using Variable Elimination.
+7. Predicting the heart disease status of a selected patient.
+
+---
+
+# 2. Concepts Used in This Practical
+
+### 1. Bayesian Network
+
+A Bayesian Network is a probabilistic graphical model that represents relationships between variables using a **Directed Acyclic Graph (DAG)**.
+
+It uses probability to represent uncertainty and make predictions.
+
+**Example:**
+
+Suppose we want to predict heart disease using:
+- Age
+- Cholesterol
+- Blood pressure
+- Maximum heart rate
+
+These features are connected to the target variable, which represents heart disease status.
+
+In this practical, the structure is:
+
+```text
+       Age ─────────┐
+       Cholesterol ─┤
+       Blood Pressure ─┤
+       Heart Rate ────┤
+                      ↓
+                Heart Disease
+```
+
+Each medical feature is a parent of the target variable.
+
+**External question: What is a Bayesian Network?**
+
+Answer: A Bayesian Network is a probabilistic graphical model that represents dependencies between variables using a directed acyclic graph and conditional probability distributions.
+
+### 2. Bayes' Theorem
+
+Bayes' Theorem calculates the probability of an event based on previously available information.
+
+Formula:
+
+\[
+P(A|B)=\frac{P(B|A)\times P(A)}{P(B)}
+\]
+
+Where:
+
+- \(P(A|B)\): Probability of A given B.
+- \(P(B|A)\): Probability of B given A.
+- \(P(A)\): Prior probability of A.
+- \(P(B)\): Probability of B.
+
+**Example:**
+
+We want to calculate the probability of heart disease given a patient's medical details.
+
+The Bayesian Network uses the available medical evidence to estimate the probability of each disease status.
+
+### 3. Dataset
+
+A dataset is a collection of data used for analysis and prediction.
+
+Here, the program uses:
+
+`heart.csv`
+
+It contains patient medical information, including numerical features and a target column.
+
+The target column represents heart disease status.
+
+For this practical:
+
+- `0` = No heart disease.
+- `1` = Heart disease.
+
+**Important:** This interpretation assumes the `heart.csv` dataset uses the common binary target encoding.
+
+### 4. Data Preprocessing
+
+Data preprocessing means cleaning and transforming raw data before using it to train a Machine Learning model.
+
+In this practical, preprocessing includes:
+
+- Converting column names into lowercase.
+- Handling missing values.
+- Converting values into numerical format.
+- Discretization of continuous variables.
+- Converting variables into categorical format.
+
+### 5. Discretization
+
+Discretization is the process of converting continuous numerical values into a limited number of categories or intervals.
+
+For example:
+
+Suppose age values are:
+
+`22, 35, 48, 60, 72`
+
+After discretization, they may be represented as:
+
+| Numerical Range | Category |
+|---|---|
+| Lower values | Low |
+| Middle values | Medium |
+| Higher values | High |
+
+In this practical, numerical features having more than five unique values are divided into three bins.
+
+**Why is discretization used?**
+
+A Discrete Bayesian Network works with discrete states. Therefore, continuous numerical features must be converted into categories.
+
+### 6. Bayesian Estimator
+
+BayesianEstimator is used to estimate the Conditional Probability Distributions (CPDs) of the Bayesian Network.
+
+It calculates probabilities using observed data along with a prior distribution.
+
+In this practical, the prior type is `BDeu`.
+
+### 7. Conditional Probability Distribution (CPD)
+
+A CPD represents the probability of a variable given the values of its parent variables.
+
+Example:
+
+\[
+P(\text{Heart Disease} \mid \text{Age, Cholesterol})
+\]
+
+It tells us the probability of heart disease for different combinations of age and cholesterol categories.
+
+### 8. Variable Elimination
+
+Variable Elimination is an exact probabilistic inference algorithm used to calculate the probability distribution of a query variable given some observed evidence.
+
+In this practical:
+
+- Query variable = `target`
+- Evidence = Patient's medical details
+
+It calculates the probability of both heart disease states based on the selected patient's features.
+
+### 9. Maximum a Posteriori (MAP) Prediction
+
+The program uses `np.argmax()` to select the disease state having the highest predicted probability.
+
+For example:
+
+| Disease Status | Probability |
+|---|---:|
+| 0 – No disease | 25% |
+| 1 – Disease | 75% |
+
+The predicted state is `1`, because it has the highest probability.
+
+---
+
+# 3. Line-by-Line Code Explanation
+
+## Step 1: Importing Required Libraries
+
+**Line 1:**
+
+`import pandas as pd`
+
+- Imports the Pandas library.
+- Pandas is used for data manipulation and analysis.
+- It helps us load, clean and process datasets.
+- `pd` is an alias used to access Pandas functions.
+
+**External question: What is Pandas?**
+
+Answer: Pandas is a Python library used for data manipulation and analysis, especially for working with tabular datasets.
+
+**Line 2:**
+
+`import numpy as np`
+
+- Imports the NumPy library.
+- NumPy is used for numerical operations.
+- `np` is an alias for NumPy.
+- Here, it is used for missing values, numerical conversion and finding the highest probability.
+
+**External question: What is NumPy?**
+
+Answer: NumPy is a Python library used for numerical calculations and array operations.
+
+**Line 3:**
+
+`from pgmpy.models import DiscreteBayesianNetwork`
+
+- Imports the DiscreteBayesianNetwork class from pgmpy.
+- It is used to create a Bayesian Network containing discrete variables.
+- This is the main model used in this practical.
+
+**External question: What is pgmpy?**
+
+Answer: pgmpy is a Python library used to create, learn and perform inference on probabilistic graphical models such as Bayesian Networks.
+
+**Line 4:**
+
+`from pgmpy.estimators import BayesianEstimator`
+
+- Imports BayesianEstimator.
+- It is used to learn the probability distributions of the network from the dataset.
+- It applies Bayesian estimation using prior information.
+
+**Line 5:**
+
+`from pgmpy.inference import VariableElimination`
+
+- Imports the VariableElimination algorithm.
+- It is used to calculate probabilities based on observed evidence.
+- Here, it predicts the probability of heart disease for a selected patient.
+
+**External question: Which algorithm is used for inference?**
+
+Answer: Variable Elimination.
+
+## Step 2: Loading the Dataset
+
+**Line 6:**
+
+`df = pd.read_csv("heart.csv")`
+
+- Reads the `heart.csv` file.
+- Loads the dataset into a Pandas DataFrame named `df`.
+- A DataFrame is a two-dimensional tabular data structure containing rows and columns.
+
+**External question: What is a DataFrame?**
+
+Answer: A DataFrame is a two-dimensional data structure in Pandas that stores data in rows and columns.
+
+**Important:** The `heart.csv` file must be available in the program's current working directory, or you must provide its correct file path.
+
+## Step 3: Cleaning Column Names
+
+**Line 7:**
+
+`df.columns = df.columns.str.lower().str.strip()`
+
+This line performs two operations:
+
+- `.str.lower()` converts all column names into lowercase.
+- `.str.strip()` removes unnecessary spaces from the beginning and end of column names.
+
+Example:
+
+Before:
+
+```text
+Age, Cholesterol, Target
+```
+
+After:
+
+```text
+age, cholesterol, target
+```
+
+**External question: Why convert column names into lowercase?**
+
+Answer: To maintain consistency and avoid errors caused by differences in uppercase and lowercase column names.
+
+## Step 4: Handling Missing Values
+
+**Line 8:**
+
+`df = df.replace("?", np.nan)`
+
+- Replaces every question mark (`?`) in the dataset with `np.nan`.
+- `np.nan` represents a missing numerical value.
+- This helps identify missing data in the dataset.
+
+Example:
+
+Before:
+
+```text
+Age = ?
+```
+
+After:
+
+```text
+Age = NaN
+```
+
+**External question: What is NaN?**
+
+Answer: NaN stands for Not a Number. In Pandas and NumPy, it is commonly used to represent missing or undefined numerical values.
+
+**Line 9:**
+
+`df = df.dropna()`
+
+- Removes all rows containing at least one missing value.
+- This ensures that the model is trained using complete records.
+
+**External question: What does dropna() do?**
+
+Answer: The `dropna()` function removes rows or columns containing missing values. By default, it removes rows with at least one missing value.
+
+**Important:** This practical removes incomplete records instead of filling missing values using imputation.
+
+## Step 5: Defining the Target Variable
+
+**Line 10:**
+
+`target = "target"`
+
+- Stores the name of the target column in a variable.
+- The target variable represents the output we want to predict.
+- Here, we want to predict whether the patient has heart disease or not.
+
+**External question: What is a target variable?**
+
+Answer: A target variable is the output variable that a Machine Learning model tries to predict.
+
+## Step 6: Checking Whether the Target Column Exists
+
+**Line 11:**
+
+`if target not in df.columns:`
+
+- Checks whether the target column exists in the dataset.
+- If the column is missing, the condition becomes true.
+
+**Line 12:**
+
+`raise ValueError("Dataset must contain a 'target' column.")`
+
+- Raises an error if the dataset does not contain the target column.
+- Prevents the program from continuing with an invalid dataset.
+
+**External question: What is ValueError?**
+
+Answer: ValueError is a Python exception raised when a function receives a value of the correct type but an inappropriate value.
+
+## Step 7: Converting Target into Numerical Format
+
+**Line 13:**
+
+`df[target] = pd.to_numeric(df[target], errors="coerce")`
+
+- Converts the target column into numerical values.
+- `pd.to_numeric()` converts values into numbers.
+- `errors="coerce"` converts invalid values into NaN instead of raising an error.
+
+Example:
+
+```text
+'1' → 1
+'0' → 0
+'abc' → NaN
+```
+
+**External question: What is the use of errors="coerce"?**
+
+Answer: It converts invalid numerical values into NaN rather than stopping the program with an error.
+
+**Line 14:**
+
+`df = df.dropna(subset=[target])`
+
+- Removes rows where the target value is missing.
+- `subset=[target]` means only the target column is checked.
+- This ensures that every remaining record has a valid target value.
+
+## Step 8: Converting Target into Categorical Format
+
+**Line 15:**
+
+`df[target] = df[target].astype(int).astype(str).astype("category")`
+
+This line performs three conversions:
+
+1. `.astype(int)` converts target values into integers.
+2. `.astype(str)` converts integers into strings.
+3. `.astype("category")` converts the column into categorical data.
+
+Example:
+
+```text
+1.0 → 1 → '1' → category
+0.0 → 0 → '0' → category
+```
+
+**Why is categorical conversion required?**
+
+Because a Discrete Bayesian Network works with discrete states such as `0` and `1`, rather than continuous numerical values.
+
+## Step 9: Converting Feature Columns into Numbers
+
+**Line 16:**
+
+`for column in df.columns:`
+
+- Starts a loop through all columns of the dataset.
+- Each column name is stored in the variable `column`.
+
+**Line 17:**
+
+`if column != target:`
+
+- Checks whether the current column is not the target column.
+- The target column is skipped because it has already been converted into categorical format.
+
+**Line 18:**
+
+`df[column] = pd.to_numeric(df[column], errors="coerce")`
+
+- Converts the remaining feature columns into numerical values.
+- Invalid values are converted into NaN.
+
+**External question: Why do we skip the target column?**
+
+Answer: Because the target column has already been converted into categorical format, and this loop is intended to process the remaining feature columns.
+
+## Step 10: Removing Newly Created Missing Values
+
+**Line 19:**
+
+`df = df.dropna()`
+
+- Removes rows containing missing values created during numerical conversion.
+- Ensures all remaining feature values are valid.
+
+**Important:** Some rows may be removed here if the original dataset contains invalid feature values.
+
+## Step 11: Discretizing Continuous Features
+
+**Line 20:**
+
+`for column in df.columns:`
+
+- Iterates through all columns of the cleaned dataset.
+
+**Line 21:**
+
+`if column != target:`
+
+- Ensures that discretization is applied only to feature columns.
+- The target column is not modified.
+
+**Line 22:**
+
+`if df[column].nunique() > 5:`
+
+- `nunique()` counts the number of unique values in a column.
+- Checks whether the column has more than five unique values.
+- If yes, the feature is treated as requiring discretization.
+
+**External question: What is nunique()?**
+
+Answer: The `nunique()` function returns the number of distinct values in a column.
+
+**Line 23–27:**
+
+`df[column] = pd.cut(...)`
+
+This is one of the most important parts of the practical.
+
+The `pd.cut()` function divides continuous numerical values into intervals called bins.
+
+Understanding its parameters:
+
+| Parameter | Meaning |
+|---|---|
+| `df[column]` | Numerical column to be divided |
+| `bins=3` | Divides the values into three intervals |
+| `labels=["Low", "Medium", "High"]` | Assigns category names to the intervals |
+| `duplicates="drop"` | Handles duplicate bin edges by dropping them |
+
+**Example:**
+
+Suppose cholesterol values range from 100 to 300.
+
+After discretization, they may be divided into:
+
+| Category | Approximate Range |
+|---|---|
+| Low | 100–166.67 |
+| Medium | 166.67–233.33 |
+| High | 233.33–300 |
+
+The exact intervals depend on the minimum and maximum values in the dataset.
+
+**External question: What is the purpose of pd.cut()?**
+
+Answer: `pd.cut()` converts continuous numerical data into categorical intervals or bins.
+
+**Line 28:**
+
+`df[column] = df[column].astype(str).astype("category")`
+
+- Converts the discretized feature values into strings.
+- Then converts those strings into categorical data.
+- This ensures that the feature columns contain discrete states.
+
+**Example:**
+
+```text
+Low → category
+Medium → category
+High → category
+```
+
+**External question: What is the difference between continuous and categorical data?**
+
+Answer:
+- Continuous data can take numerical values within a range, such as age and cholesterol.
+- Categorical data represents groups or labels, such as Low, Medium and High.
+
+## Step 12: Separating Features from Target
+
+**Line 29:**
+
+`features = [column for column in df.columns if column != target]`
+
+- Creates a list of all feature column names.
+- Excludes the target column.
+- These features will be used as evidence for predicting heart disease.
+
+This is called **list comprehension** in Python.
+
+Example:
+
+If the columns are:
+
+```text
+age, cholesterol, blood_pressure, target
+```
+
+Then:
+
+```python
+features = ['age', 'cholesterol', 'blood_pressure']
+```
+
+**External question: What are features?**
+
+Answer: Features are the input variables used by a Machine Learning model to make predictions.
+
+## Step 13: Defining Bayesian Network Structure
+
+**Line 30:**
+
+`edges = [(feature, target) for feature in features]`
+
+- Creates directed edges between each feature and the target variable.
+- Every feature becomes a parent of the target.
+- The target becomes the child node.
+
+Example:
+
+```python
+[
+    ('age', 'target'),
+    ('cholesterol', 'target'),
+    ('blood_pressure', 'target')
+]
+```
+
+**External question: What is an edge in a Bayesian Network?**
+
+Answer: An edge is a directed connection between two variables that represents a dependency relationship in the network structure.
+
+**Line 31:**
+
+`model = DiscreteBayesianNetwork(edges)`
+
+- Creates the Discrete Bayesian Network.
+- Uses the previously defined edges to construct the network structure.
+- The model represents relationships between patient features and the target.
+
+**Important:** This code defines a simple network in which all features are parents of the target. It does not automatically discover causal relationships between medical variables.
+
+## Step 14: Training the Bayesian Network
+
+**Line 32–36:**
+
+`model.fit(...)`
+
+- Trains the Bayesian Network using the processed dataset.
+- Learns the probability distributions of the variables.
+- Uses BayesianEstimator for probability estimation.
+- Uses BDeu as the prior type.
+
+Understanding the parameters:
+
+**1. `df`**
+
+The preprocessed patient dataset used for training.
+
+**2. `estimator=BayesianEstimator`**
+
+Uses Bayesian estimation to learn conditional probability distributions.
+
+**3. `prior_type="BDeu"`**
+
+BDeu stands for Bayesian Dirichlet equivalent uniform.
+
+It is a prior distribution used during Bayesian parameter estimation.
+
+It helps avoid assigning zero probability to a state simply because that combination was not observed in the training data.
+
+**External question: What is Bayesian Estimation?**
+
+Answer: Bayesian estimation calculates probability distributions by combining observed data with prior probability information.
+
+**External question: What is BDeu?**
+
+Answer: BDeu stands for Bayesian Dirichlet equivalent uniform. It is a uniform prior used for estimating Bayesian Network parameters.
+
+## Step 15: Displaying Bayesian Network Structure
+
+**Line 37:**
+
+`print("\nBayesian Network Structure:")`
+
+- Displays the heading for the network structure.
+
+**Line 38:**
+
+`print(model.edges())`
+
+- Displays all directed edges of the Bayesian Network.
+- Each edge represents a connection from a feature to the target.
+
+Example:
+
+```text
+[('age', 'target'),
+ ('cholesterol', 'target'),
+ ('blood_pressure', 'target')]
+```
+
+The actual output depends on the columns in `heart.csv`.
+
+## Step 16: Validating the Model
+
+**Line 39:**
+
+`print("\nBayesian Network Model Validation:")`
+
+- Displays the validation heading.
+
+**Line 40:**
+
+`print(model.check_model())`
+
+- Checks whether the Bayesian Network is structurally and probabilistically valid.
+- Verifies that the required CPDs are present and valid.
+- Checks whether the probability distributions are properly normalized.
+
+If the model is valid, it returns:
+
+```text
+True
+```
+
+**External question: What is CPD?**
+
+Answer: CPD stands for Conditional Probability Distribution. It represents the probability of a variable based on the values of its parent variables.
+
+## Step 17: Creating the Inference Object
+
+**Line 41:**
+
+`inference = VariableElimination(model)`
+
+- Creates an inference object using the trained Bayesian Network.
+- Variable Elimination is used to calculate probabilities based on observed evidence.
+- It will help predict the target state for a selected patient.
+
+**External question: What is Variable Elimination?**
+
+Answer: Variable Elimination is an exact inference algorithm that calculates the probability distribution of a query variable by eliminating unnecessary variables from the network.
+
+## Step 18: Displaying Available Patient Records
+
+**Line 42:**
+
+`print("\nAvailable Patient Records:", len(df))`
+
+- Displays the number of patient records remaining after preprocessing.
+- `len(df)` returns the number of rows in the DataFrame.
+- This number may be smaller than the original dataset because incomplete or invalid records were removed.
+
+## Step 19: Accepting Patient Record Number
+
+**Line 43:**
+
+`while True:`
+
+- Starts an infinite loop.
+- It continues until a valid patient record number is entered.
+- The loop stops using `break` when a valid input is received.
+
+**External question: Why use while True?**
+
+Answer: To repeatedly ask the user for input until a valid patient record number is entered.
+
+**Line 44:**
+
+`try:`
+
+- Starts an exception-handling block.
+- It allows the program to handle invalid user input without crashing.
+
+**Line 45–47:**
+
+```python
+patient_no = int(
+    input("\nEnter Patient Record Number (0 to {}): ".format(len(df) - 1))
+)
+```
+
+- `input()` accepts the patient record number.
+- `.format()` inserts the last valid record index into the message.
+- `len(df) - 1` calculates the last valid index because Python indexing starts from zero.
+- `int()` converts the entered value into an integer.
+
+Example:
+
+If there are 100 records, valid indexes are:
+
+```text
+0 to 99
+```
+
+**External question: Why does indexing start from zero?**
+
+Answer: Python uses zero-based indexing, meaning the first element is stored at index 0.
+
+## Step 20: Validating Patient Number
+
+**Line 48:**
+
+`if 0 <= patient_no < len(df):`
+
+- Checks whether the entered patient number is within the valid range.
+- It must be greater than or equal to zero.
+- It must be smaller than the total number of records.
+
+**Line 49:**
+
+`break`
+
+- Stops the while loop when a valid record number is entered.
+
+**Line 50–51:**
+
+```python
+else:
+    print("Please enter a valid record number.")
+```
+
+- Executes when the entered number is outside the valid range.
+- Displays an error message and asks for input again.
+
+## Step 21: Handling Invalid Input
+
+**Line 52–53:**
+
+```python
+except ValueError:
+    print("Please enter a valid integer.")
+```
+
+- Handles invalid inputs that cannot be converted into integers.
+- For example, if the user enters `"hello"` or `"abc"`, Python raises a ValueError.
+- The except block catches it and displays an appropriate message.
+
+**External question: What is exception handling?**
+
+Answer: Exception handling is a mechanism used to handle runtime errors so that the program can continue executing without terminating unexpectedly.
+
+## Step 22: Selecting the Patient Record
+
+**Line 54:**
+
+`patient = df.iloc[patient_no]`
+
+- Selects the patient record at the entered row index.
+- `iloc` is used for integer-position-based indexing.
+- Stores the selected patient's details in the variable `patient`.
+
+**External question: What is iloc?**
+
+Answer: `iloc` is a Pandas function used to access rows and columns based on their integer positions.
+
+## Step 23: Creating Evidence Dictionary
+
+**Line 55–58:**
+
+```python
+evidence = {
+    feature: patient[feature]
+    for feature in features
+}
+```
+
+- Creates a dictionary containing all the selected patient's feature values.
+- Each feature name becomes a key.
+- The corresponding patient value becomes its value.
+- This dictionary is passed to the inference algorithm.
+
+Example:
+
+```python
+{
+    'age': 'Medium',
+    'cholesterol': 'High',
+    'blood_pressure': 'Low'
+}
+```
+
+The actual keys and values depend on the dataset.
+
+**External question: What is evidence in a Bayesian Network?**
+
+Answer: Evidence refers to observed values of variables that are used to calculate the probability of another variable.
+
+## Step 24: Displaying Patient Medical Details
+
+**Line 59:**
+
+`print("\nPatient Medical Details:")`
+
+- Displays the heading.
+
+**Line 60:**
+
+`for feature, value in evidence.items():`
+
+- Iterates through all feature-value pairs in the evidence dictionary.
+
+**Line 61:**
+
+`print(feature, ":", value)`
+
+- Displays each feature and its corresponding patient value.
+
+Example:
+
+```text
+age : Medium
+cholesterol : High
+blood_pressure : Low
+```
+
+## Step 25: Performing Probabilistic Inference
+
+**Line 62–65:**
+
+```python
+result = inference.query(
+    variables=[target],
+    evidence=evidence
+)
+```
+
+This is the most important part of the prediction process.
+
+- `inference.query()` performs probabilistic inference.
+- `variables=[target]` specifies that we want to predict the target variable.
+- `evidence=evidence` provides the selected patient's medical details.
+- The result contains the probability distribution of the target states.
+
+In simple words:
+
+The model uses the patient's medical details to calculate the probability of:
+
+- Target = 0: No heart disease.
+- Target = 1: Heart disease.
+
+**External question: What is the query variable?**
+
+Answer: The query variable is the variable whose probability we want to calculate. Here, it is the `target` variable.
+
+**External question: What is evidence?**
+
+Answer: Evidence is the known information provided to the Bayesian Network to calculate the probability of the query variable.
+
+## Step 26: Extracting Target States
+
+**Line 66:**
+
+`states = result.state_names[target]`
+
+- Extracts the possible states of the target variable.
+- In this practical, the states are generally `"0"` and `"1"`.
+- These represent the two possible heart disease outcomes.
+
+**Important:** The exact ordering of states is obtained from the inference result. We should not assume that the first probability always represents state 0.
+
+## Step 27: Extracting Probabilities
+
+**Line 67:**
+
+`probabilities = result.values`
+
+- Extracts the calculated probability values from the inference result.
+- Each probability corresponds to a target state.
+
+Example:
+
+```python
+[0.25, 0.75]
+```
+
+This means the two states have probabilities of 25% and 75%, respectively, assuming the states are ordered as `[0, 1]`.
+
+## Step 28: Displaying Heart Disease Probabilities
+
+**Line 68:**
+
+`print("\nHeart Disease Diagnosis:")`
+
+- Displays the heading.
+
+**Line 69:**
+
+`for state, probability in zip(states, probabilities):`
+
+- Iterates through the target states and their corresponding probabilities.
+- `zip()` combines two sequences element by element.
+
+Example:
+
+```text
+states = ['0', '1']
+probabilities = [0.25, 0.75]
+```
+
+The loop pairs them as:
+
+```text
+('0', 0.25)
+('1', 0.75)
+```
+
+**Line 70–73:**
+
+```python
+print(
+    "Disease Status", state, ":",
+    round(float(probability) * 100, 2), "%"
+)
+```
+
+This line displays the probability in percentage format.
+
+Operations:
+
+1. `float(probability)` converts the probability into a floating-point number.
+2. `* 100` converts probability into percentage.
+3. `round(..., 2)` rounds it to two decimal places.
+4. `print()` displays the result.
+
+Example:
+
+```text
+0.75678 × 100 = 75.678
+```
+
+After rounding:
+
+```text
+75.68%
+```
+
+## Step 29: Selecting the Final Prediction
+
+**Line 74:**
+
+`prediction = states[np.argmax(probabilities)]`
+
+- `np.argmax()` returns the index of the maximum probability.
+- `states[...]` retrieves the target state corresponding to that index.
+- Stores the predicted state in `prediction`.
+
+Example:
+
+```python
+states = ['0', '1']
+probabilities = [0.25, 0.75]
+```
+
+Here:
+
+- Maximum probability = 0.75.
+- Its index = 1.
+- `states[1] = '1'`.
+
+Therefore:
+
+```python
+prediction = '1'
+```
+
+**External question: What is argmax()?**
+
+Answer: `argmax()` returns the index of the maximum value in an array.
+
+## Step 30: Displaying Final Diagnosis
+
+**Line 75:**
+
+`print("\nFinal Diagnosis:")`
+
+- Displays the final diagnosis heading.
+
+**Line 76:**
+
+`if prediction == "1":`
+
+- Checks whether the predicted target state is 1.
+- If true, the program identifies the predicted result as heart disease detected.
+
+**Line 77:**
+
+`print("Heart Disease Detected")`
+
+- Displays the heart disease detected message.
+
+**Line 78–79:**
+
+```python
+else:
+    print("No Heart Disease Detected")
+```
+
+- Executes when the predicted state is not `"1"`.
+- Displays the no heart disease detected message.
+
+**External question: How does the program decide the final diagnosis?**
+
+Answer: It compares the probabilities of the two target states and selects the state with the highest probability using `np.argmax()`.
+
+---
+
+---
+
+# 4. Complete Output Explanation
+
+The exact numerical output depends on the contents of your `heart.csv` dataset. The following is an **illustrative output** to help you understand the execution.
+
+### Step 1: Bayesian Network Structure
+
+```text
+Bayesian Network Structure:
+[('age', 'target'),
+ ('cholesterol', 'target'),
+ ('blood_pressure', 'target'),
+ ('max_heart_rate', 'target')]
+```
+
+**Explanation:**
+
+- Each feature is connected to the target variable.
+- The features act as parent nodes.
+- The target acts as the child node.
+- The actual number of edges depends on the columns in your dataset.
+
+### Step 2: Bayesian Network Model Validation
+
+```text
+Bayesian Network Model Validation:
+True
+```
+
+**Explanation:**
+
+- `True` means the model passed its structural and probability-distribution checks.
+- It confirms that the required CPDs are present and valid.
+- It does not mean that the model's predictions are necessarily accurate.
+
+### Step 3: Available Patient Records
+
+```text
+Available Patient Records: 1000
+```
+
+**Explanation:**
+
+- Displays the number of records remaining after preprocessing.
+- The number 1000 is only an example.
+- Records containing missing or invalid values may have been removed.
+
+### Step 4: Selecting a Patient
+
+```text
+Enter Patient Record Number (0 to 999): 5
+```
+
+**Explanation:**
+
+- The user enters a patient record index.
+- Here, record number 5 is selected.
+- Python uses zero-based indexing, so it represents the sixth row.
+
+### Step 5: Patient Medical Details
+
+```text
+Patient Medical Details:
+
+age : Medium
+cholesterol : High
+blood_pressure : Low
+max_heart_rate : Medium
+```
+
+**Explanation:**
+
+- Displays the selected patient's medical details.
+- Continuous features may appear as Low, Medium or High after discretization.
+- These values are passed to the Bayesian Network as evidence.
+
+### Step 6: Heart Disease Diagnosis
+
+```text
+Heart Disease Diagnosis:
+
+Disease Status 0 : 25.00 %
+Disease Status 1 : 75.00 %
+```
+
+**Explanation:**
+
+The model calculates the probability of both target states.
+
+| Target State | Meaning | Probability |
+|---|---|---:|
+| 0 | No heart disease | 25% |
+| 1 | Heart disease | 75% |
+
+These percentages are illustrative.
+
+The model estimates a 75% probability for target state 1 and a 25% probability for target state 0.
+
+### Step 7: Final Diagnosis
+
+```text
+Final Diagnosis:
+Heart Disease Detected
+```
+
+**Explanation:**
+
+- The program compares both probabilities.
+- The highest probability is 75%.
+- It corresponds to target state 1.
+- Therefore, the program displays `Heart Disease Detected`.
+
+### What happens if the probability of state 0 is higher?
+
+For example:
+
+| Target State | Probability |
+|---|---:|
+| 0 – No heart disease | 80% |
+| 1 – Heart disease | 20% |
+
+The output would be:
+
+```text
+Final Diagnosis:
+No Heart Disease Detected
+```
+
+**Important:** This is an educational prediction from a dataset, not a medical diagnosis. It should not be used to make real healthcare decisions.
+
+---
+
+# 5. Complete AIM-Based Theory
+
+### Q1. What is a Bayesian Network?
+
+A Bayesian Network is a probabilistic graphical model that represents relationships between variables using a Directed Acyclic Graph (DAG).
+
+It uses probability distributions to represent uncertainty and make predictions.
+
+### Q2. What is Bayes' Theorem?
+
+Bayes' Theorem is used to calculate the probability of an event based on previously available information.
+
+Formula:
+
+\[
+P(A|B)=\frac{P(B|A)P(A)}{P(B)}
+\]
+
+It is the mathematical foundation behind Bayesian probability updating.
+
+### Q3. What is a Directed Acyclic Graph (DAG)?
+
+A DAG is a graph containing directed edges but no directed cycles.
+
+- Directed means edges have a specific direction.
+- Acyclic means there is no circular path.
+
+Example:
+
+```text
+Age ────────→
+Cholesterol ─→ Heart Disease
+Blood Pressure →
+```
+
+There is no circular connection in this structure.
+
+### Q4. What are nodes and edges in a Bayesian Network?
+
+- **Nodes:** Represent variables such as age, cholesterol and heart disease.
+- **Edges:** Represent directed dependency relationships between variables.
+
+### Q5. What is a Conditional Probability Distribution?
+
+A Conditional Probability Distribution (CPD) represents the probability of a variable given the values of its parent variables.
+
+Example:
+
+\[
+P(\text{Heart Disease} \mid \text{Age, Cholesterol})
+\]
+
+It calculates the probability of heart disease for given age and cholesterol categories.
+
+### Q6. What is Bayesian Estimation?
+
+Bayesian Estimation is a method of estimating probabilities by combining observed data with prior probability information.
+
+It helps estimate the parameters of a Bayesian Network.
+
+### Q7. What is BDeu?
+
+BDeu stands for Bayesian Dirichlet equivalent uniform.
+
+It is a uniform prior used in Bayesian Network parameter estimation.
+
+It helps avoid zero-probability estimates for combinations that were not observed in the training dataset.
+
+### Q8. What is Variable Elimination?
+
+Variable Elimination is an exact inference algorithm used to calculate the probability distribution of a query variable given observed evidence.
+
+In this practical:
+
+- Query variable: `target`
+- Evidence: Patient medical details.
+
+### Q9. What is the difference between Training and Inference?
+
+| Training | Inference |
+|---|---|
+| Learns probability distributions from data. | Calculates probabilities using the learned model. |
+| Uses `model.fit()`. | Uses `inference.query()`. |
+| Estimates CPDs. | Predicts the target probability. |
+
+### Q10. What is Discretization?
+
+Discretization converts continuous numerical values into a limited number of categories.
+
+Example:
+
+```text
+Age = 25 → Low
+Age = 45 → Medium
+Age = 70 → High
+```
+
+The actual category depends on the intervals created from the dataset.
+
+### Q11. Why is Discretization required in this practical?
+
+Because we are using a Discrete Bayesian Network, which works with discrete states rather than continuous numerical values.
+
+### Q12. What is the difference between Discrete and Continuous Bayesian Networks?
+
+| Discrete Bayesian Network | Continuous Bayesian Network |
+|---|---|
+| Uses discrete variables. | Uses continuous variables. |
+| Values are categories or states. | Values are numerical measurements. |
+| Example: Low, Medium, High. | Example: Age = 45.5. |
+
+### Q13. What is a Prior Probability?
+
+Prior probability is the probability of an event before considering new evidence.
+
+Example:
+
+The probability of heart disease in the overall dataset before considering a particular patient's medical details.
+
+### Q14. What is Posterior Probability?
+
+Posterior probability is the updated probability of an event after considering available evidence.
+
+Example:
+
+The probability of heart disease after considering the patient's age, cholesterol and other medical details.
+
+### Q15. What is the purpose of `np.argmax()`?
+
+It returns the index of the maximum value in an array.
+
+Here, it identifies which target state has the highest predicted probability.
+
+### Q16. What is the difference between a Bayesian Network and Naive Bayes?
+
+| Bayesian Network | Naive Bayes |
+|---|---|
+| Represents dependencies using a DAG. | Uses a simplified probabilistic classification model. |
+| Can represent more complex relationships. | Assumes features are conditionally independent given the class. |
+| Structure can contain different parent-child relationships. | Features are generally modeled as independent parents of the class. |
+
+### Q17. What are the applications of Bayesian Networks?
+
+1. Medical diagnosis.
+2. Risk assessment.
+3. Fault detection.
+4. Decision support systems.
+5. Weather prediction.
+6. Fraud detection.
+7. Reliability analysis.
+
+---
+
+# 6. External Viva Questions and Answers
+
+| No. | Question | Answer |
+|---|---|---|
+| 1 | What is the aim of this practical? | To predict heart disease using a Discrete Bayesian Network. |
+| 2 | Which dataset is used? | heart.csv |
+| 3 | Which library is used to create the Bayesian Network? | pgmpy |
+| 4 | What is pgmpy? | A Python library for probabilistic graphical models. |
+| 5 | What is a Bayesian Network? | A probabilistic graphical model based on a DAG. |
+| 6 | What is DAG? | Directed Acyclic Graph. |
+| 7 | What is Bayes' Theorem? | A theorem used to calculate conditional probability. |
+| 8 | What is a node? | A variable in the Bayesian Network. |
+| 9 | What is an edge? | A directed relationship between two nodes. |
+| 10 | What is a CPD? | Conditional Probability Distribution. |
+| 11 | Which estimator is used? | BayesianEstimator. |
+| 12 | What is BDeu? | Bayesian Dirichlet equivalent uniform prior. |
+| 13 | Which inference algorithm is used? | Variable Elimination. |
+| 14 | What is evidence? | Observed information provided to the model. |
+| 15 | What is the query variable? | The variable whose probability is being calculated. |
+| 16 | What is the target variable? | The output variable to be predicted. |
+| 17 | Why is discretization performed? | To convert continuous values into discrete categories. |
+| 18 | Which function performs discretization? | `pd.cut()`. |
+| 19 | What is the use of nunique()? | Counts distinct values in a column. |
+| 20 | What does dropna() do? | Removes rows containing missing values by default. |
+| 21 | What is NaN? | Represents a missing or undefined numerical value. |
+| 22 | What is the use of iloc? | Selects rows or columns using integer positions. |
+| 23 | What is Variable Elimination? | An algorithm for probabilistic inference. |
+| 24 | What does model.check_model() do? | Checks the validity of the model and its CPDs. |
+| 25 | What does np.argmax() do? | Returns the index of the maximum value. |
+| 26 | What is prior probability? | Probability before considering new evidence. |
+| 27 | What is posterior probability? | Probability after considering evidence. |
+| 28 | What does model.fit() do? | Learns the network's probability distributions from data. |
+| 29 | What does inference.query() do? | Calculates the probability distribution of a query variable. |
+| 30 | Does this model guarantee an accurate medical diagnosis? | No. It is an educational prediction and requires proper clinical validation before any real-world use. |
+
+---
+
+# 7. Important Differences for Viva
+
+| Concept | Meaning | Example |
+|---|---|---|
+| Bayesian Network | Probabilistic graphical model | Heart disease prediction |
+| DAG | Directed graph without cycles | Age → Target |
+| Node | Represents a variable | Age |
+| Edge | Represents a directed relationship | Age → Target |
+| CPD | Conditional probability distribution | P(Target \| Age) |
+| Prior Probability | Probability before evidence | General disease probability |
+| Posterior Probability | Probability after evidence | Disease probability given patient details |
+| Discretization | Converts numerical values into categories | 25 → Low |
+| BayesianEstimator | Estimates probability distributions | Learns CPDs |
+| BDeu | Bayesian prior | Uniform prior |
+| Variable Elimination | Performs probabilistic inference | Calculates target probability |
+| Evidence | Known input information | Patient medical details |
+| Query Variable | Variable to be predicted | Target |
+| Argmax | Finds the maximum-value index | Selects the most probable state |
+
+---
+
+# 8. Quick Revision Before Practical
+
+| Code / Function | Purpose |
+|---|---|
+| `pd.read_csv()` | Loads CSV dataset |
+| `df.columns.str.lower()` | Converts column names into lowercase |
+| `str.strip()` | Removes extra spaces |
+| `df.replace()` | Replaces specified values |
+| `np.nan` | Represents missing values |
+| `df.dropna()` | Removes missing-value rows |
+| `pd.to_numeric()` | Converts values into numerical format |
+| `astype("category")` | Converts values into categorical data |
+| `nunique()` | Counts unique values |
+| `pd.cut()` | Divides numerical data into bins |
+| `DiscreteBayesianNetwork()` | Creates Bayesian Network |
+| `model.fit()` | Trains the model |
+| `BayesianEstimator` | Estimates CPDs |
+| `prior_type="BDeu"` | Uses BDeu prior |
+| `model.edges()` | Displays network edges |
+| `model.check_model()` | Validates the model |
+| `VariableElimination()` | Creates inference object |
+| `inference.query()` | Calculates probabilities |
+| `df.iloc[]` | Selects a row using its index |
+| `np.argmax()` | Finds the index of maximum probability |
+| `len()` | Counts records |
+
+---
+
+# 9. Explain This Practical to the External Examiner
+
+You can explain it like this:
+
+"This practical implements heart disease prediction using a Discrete Bayesian Network in Python. First, we load the heart disease dataset using Pandas and preprocess it by handling missing values and converting the data into categorical format. We use discretization to divide continuous numerical features into Low, Medium and High categories. Then, we create a Bayesian Network in which all medical features are connected to the target variable. We train the network using BayesianEstimator with the BDeu prior to estimate the conditional probability distributions. After training, we validate the model using check_model(). Next, we use Variable Elimination to perform probabilistic inference. We select a patient record, provide the patient's medical details as evidence and calculate the probability of both heart disease states. Finally, we select the state with the highest probability using argmax() and display the predicted result."
+
+---
+
+# 10. Important Technical Points and Limitations
+
+These points are especially useful if the external examiner asks questions beyond the code.
+
+### 1. Why is the target column not discretized?
+
+The target column is already converted into categorical states, generally `0` and `1`. Therefore, it does not require further discretization.
+
+### 2. Why are all features connected directly to the target?
+
+The program uses a predefined network structure in which every feature is a parent of the target.
+
+It is a simple structure designed for predicting the target from medical features.
+
+**Remember:** The edges represent the assumed dependency structure. They do not prove that each medical feature causes heart disease.
+
+### 3. Does this code use a train-test split?
+
+No. The code trains the model using the entire cleaned dataset.
+
+It then selects a patient record from that same dataset for inference.
+
+This means the selected patient may already have been included during training. Therefore, this practical demonstrates Bayesian inference, but it does not provide an unbiased evaluation of prediction accuracy.
+
+### 4. Does this code calculate model accuracy?
+
+No. It calculates probabilities for the selected patient but does not compare predictions against actual labels across a separate test dataset.
+
+To evaluate performance properly, we would need a train-test split and metrics such as:
+
+- Accuracy
+- Precision
+- Recall
+- F1-score
+- Confusion matrix
+
+### 5. What happens if the dataset contains more than two target classes?
+
+The model can potentially calculate probabilities for multiple target states. However, the final diagnosis code only checks whether the predicted state is `"1"`.
+
+Any other predicted state will be displayed as `"No Heart Disease Detected"`.
+
+Therefore, this final diagnosis logic is appropriate only when the dataset uses binary target encoding of 0 and 1.
+
+### 6. What happens if the user enters an invalid patient number?
+
+The program handles two cases:
+
+- If the number is outside the valid range, it displays `"Please enter a valid record number."`
+- If the input is not an integer, it displays `"Please enter a valid integer."`
+
+The loop continues until valid input is entered.
+
+---
+
+## 11. Most Important Questions to Prepare First
+
+If you have limited time before your practical, prepare these questions first:
+
+1. What is a Bayesian Network?
+2. What is Bayes' Theorem and its formula?
+3. What is a Directed Acyclic Graph?
+4. What are nodes and edges?
+5. What is a Conditional Probability Distribution?
+6. What is BayesianEstimator?
+7. What is BDeu?
+8. What is Variable Elimination?
+9. What is evidence in a Bayesian Network?
+10. Why is discretization required?
+11. What is the difference between prior and posterior probability?
+12. What is the use of `pd.cut()`?
+13. What is the use of `model.check_model()`?
+14. What is the use of `np.argmax()`?
+15. Does this code calculate accuracy?
+
+**The most important concept to understand:** Your program first learns probability distributions from patient records, then uses a selected patient's medical details as evidence to calculate the probability of heart disease.

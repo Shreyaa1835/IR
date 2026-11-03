@@ -1,0 +1,816 @@
+# Practical: Web Scraping Using Python (E-Commerce Product Information)
+
+## 1. AIM
+
+To perform Web Scraping using Python to extract product information from an e-commerce website using the Requests and BeautifulSoup libraries.
+
+The practical extracts the following information from the Books to Scrape website:
+
+1. Product name.
+2. Product price.
+3. Product availability.
+4. Product URL.
+
+# 2. Concepts Used in This Practical
+
+### 1. Web Scraping
+
+Web Scraping is the process of automatically extracting information from websites using a program.
+
+Instead of manually visiting a website and copying information, Python collects the required information automatically.
+
+Example:
+
+Suppose an e-commerce website contains 100 books.
+
+Using web scraping, we can automatically extract:
+
+- Book names.
+- Prices.
+- Availability.
+- Product links.
+
+Applications:
+
+- Price comparison.
+- Product information collection.
+- Market research.
+- Data analysis.
+- Competitor analysis.
+
+### 2. Web Crawling vs Web Scraping
+
+| Web Crawling                    | Web Scraping                            |
+| ------------------------------- | --------------------------------------- |
+| Discovers and visits webpages.  | Extracts information from webpages.     |
+| Focuses on navigating websites. | Focuses on collecting data.             |
+| Used by search engines.         | Used for price comparison and research. |
+
+### 3. HTML
+
+HTML stands for HyperText Markup Language.
+
+It is used to create the structure of webpages.
+
+HTML contains elements such as:
+
+- `<h1>` – Heading.
+- `<p>` – Paragraph.
+- `<a>` – Hyperlink.
+- `<div>` – Container.
+- `<article>` – Article or content section.
+
+In this practical, product information is stored inside HTML elements.
+
+### 4. HTML Tags, Attributes and Classes
+
+Consider this example:
+
+```
+<article class="product_pod">
+    <h3>
+        <a href="book.html" title="A Book">A Book</a>
+    </h3>
+    <p class="price_color">£20.00</p>
+</article>
+```
+
+| Element       | Meaning             |
+| ------------- | ------------------- |
+| `article`     | HTML tag            |
+| `class`       | HTML attribute      |
+| `product_pod` | Class name          |
+| `href`        | Hyperlink attribute |
+| `title`       | Title attribute     |
+| `£20.00`      | Text content        |
+
+External question: What is an HTML attribute?
+
+Answer: An HTML attribute provides additional information about an HTML element. For example, `class`, `href` and `title`.
+
+### 5. Requests Library
+
+Requests is a Python library used to send HTTP requests to websites and retrieve their responses.
+
+Common methods:
+
+- `requests.get()` – Retrieves information from a webpage.
+- `requests.post()` – Sends data to a server.
+- `requests.put()` – Updates data.
+- `requests.delete()` – Deletes data.
+
+This practical uses `requests.get()`.
+
+### 6. HTTP
+
+HTTP stands for HyperText Transfer Protocol.
+
+It is a communication protocol used to transfer information between a client and a web server.
+
+In this practical:
+
+- Client = Python program.
+- Server = Books to Scrape website.
+
+The Python program sends a request, and the website sends back a response.
+
+### 7. HTTP Status Codes
+
+HTTP status codes indicate the result of a request.
+
+| Status Code | Meaning                        |
+| ----------- | ------------------------------ |
+| 200         | OK – Request successful.       |
+| 301         | Moved Permanently.             |
+| 302         | Found – Temporary redirection. |
+| 400         | Bad Request.                   |
+| 403         | Forbidden.                     |
+| 404         | Page Not Found.                |
+| 500         | Internal Server Error.         |
+
+In this practical, the program checks whether the status code is 200.
+
+### 8. BeautifulSoup
+
+BeautifulSoup is a Python library used to parse HTML and XML documents and extract information from them.
+
+It helps us:
+
+- Find HTML elements.
+- Extract text.
+- Access attributes.
+- Search using tags and classes.
+
+External question: Why do we use BeautifulSoup?
+
+Answer: BeautifulSoup makes it easier to parse HTML documents and extract the required information from webpages.
+
+### 9. HTML Parsing
+
+Parsing means analyzing the structure of HTML so that we can access its elements and content.
+
+For example, BeautifulSoup converts the HTML response into a structure that Python can search and navigate.
+
+### 10. URL and urljoin()
+
+URL stands for Uniform Resource Locator.
+
+It is the address of a resource on the internet.
+
+`urljoin()` combines a base URL with a relative URL to create a complete URL.
+
+Example:
+
+Base URL:
+
+```
+https://books.toscrape.com/
+```
+
+Relative URL:
+
+```
+catalogue/book_1/index.html
+```
+
+Complete URL:
+
+```
+https://books.toscrape.com/catalogue/book_1/index.html
+```
+
+# 3. Line-by-Line Code Explanation
+
+## Step 1: Importing Required Libraries
+
+Line 1:
+
+`import requests`
+
+- Imports the Requests library.
+- Used to send HTTP requests to websites.
+- Helps retrieve webpage content from a server.
+
+External question: What is Requests?
+
+Answer: Requests is a Python library used to send HTTP requests and receive responses from web servers.
+
+Line 2:
+
+`from bs4 import BeautifulSoup`
+
+- Imports BeautifulSoup from the `bs4` package.
+- Used to parse HTML content.
+- Helps extract product names, prices and availability.
+
+External question: What is bs4?
+
+Answer: `bs4` is the package name used to import BeautifulSoup, a library for parsing HTML and XML documents.
+
+Line 3:
+
+`from urllib.parse import urljoin`
+
+- Imports the `urljoin()` function.
+- Used to combine a base URL and a relative URL.
+- Helps generate complete product links.
+
+External question: Why is urljoin() used?
+
+Answer: It converts relative URLs into complete URLs by combining them with the base URL.
+
+## Step 2: Defining the Website URL
+
+Line 4:
+
+`url = "https://books.toscrape.com/"`
+
+- Stores the website address in a variable called `url`.
+- This is the website from which we want to extract product information.
+- Books to Scrape is a website designed for practising web scraping.
+
+External question: What is a URL?
+
+Answer: URL stands for Uniform Resource Locator. It is the address used to locate a resource on the internet.
+
+## Step 3: Defining HTTP Headers
+
+Line 5–7:
+
+```
+headers = {    "User-Agent": "Mozilla/5.0"}
+```
+
+- Creates a dictionary called `headers`.
+- Adds a User-Agent field.
+- The User-Agent identifies the client making the request.
+- Here, it identifies the request with a browser-like User-Agent string.
+
+External question: What is User-Agent?
+
+Answer: User-Agent is an HTTP header that identifies the software making a request, such as a browser or other client.
+
+Why is it used?
+
+Some websites use User-Agent information when handling requests. Providing a browser-like User-Agent can help avoid basic client-identification issues, but it does not guarantee access.
+
+## Step 4: Sending an HTTP Request
+
+Line 8:
+
+`response = requests.get(url, headers=headers, timeout=15)`
+
+This is one of the most important lines.
+
+It sends an HTTP GET request to the website.
+
+Understanding each parameter:
+
+- `requests.get()` – Sends a GET request.
+- `url` – Specifies the website address.
+- `headers=headers` – Sends the defined HTTP headers.
+- `timeout=15` – Sets a maximum waiting time of 15 seconds for the request.
+
+The server's response is stored in the variable `response`.
+
+External question: What is GET?
+
+Answer: GET is an HTTP method used to request or retrieve information from a server.
+
+External question: Why is timeout used?
+
+Answer: Timeout prevents the program from waiting indefinitely if the server does not respond.
+
+External question: What is response?
+
+Answer: It is the response object returned by the server. It contains information such as status code, headers and webpage content.
+
+## Step 5: Checking the Response Status
+
+Line 9:
+
+`if response.status_code == 200:`
+
+- Checks whether the server successfully processed the request.
+- `status_code` gives the HTTP response status.
+- 200 means OK.
+- If the status code is 200, the program enters the `if` block.
+
+External question: What does status code 200 mean?
+
+Answer: It means the HTTP request was successful.
+
+## Step 6: Parsing the HTML
+
+Line 10:
+
+`soup = BeautifulSoup(response.text, "html.parser")`
+
+This line converts the webpage HTML into a structure that BeautifulSoup can search.
+
+Understanding the parameters:
+
+1\. `response.text`
+
+- Contains the HTML response as text.
+- It represents the webpage's HTML source.
+
+2\. `BeautifulSoup()`
+
+- Creates a BeautifulSoup object.
+- Parses the HTML content.
+
+3\. `"html.parser"`
+
+- Specifies Python's built-in HTML parser.
+- It analyzes the HTML structure.
+
+The parsed webpage is stored in `soup`.
+
+External question: What is a parser?
+
+Answer: A parser analyzes the structure of a document so that its elements and information can be accessed.
+
+## Step 7: Finding All Products
+
+Line 11:
+
+`products = soup.find_all("article", class_="product_pod")`
+
+This line finds all product containers in the webpage.
+
+Understanding the parameters:
+
+- `soup.find_all()` – Finds all matching HTML elements.
+- `"article"` – Searches for article tags.
+- `class_="product_pod"` – Filters elements having the class `product_pod`.
+
+Why is `class_` used instead of `class`?
+
+Because `class` is a reserved keyword in Python. BeautifulSoup uses `class_` to search for the HTML class attribute.
+
+The matching product elements are stored in `products`.
+
+External question: What is the difference between find() and find_all()?
+
+| find()                              | find_all()                     |
+| ----------------------------------- | ------------------------------ |
+| Returns the first matching element. | Returns all matching elements. |
+| Returns one element or None.        | Returns a list-like ResultSet. |
+
+## Step 8: Printing the Heading
+
+Line 12:
+
+`print("E-Commerce Website Product Information")`
+
+\- Prints the title of the practical output.
+
+Line 13:
+
+`print("--------------------------------------")`
+
+\- Prints a separator line to make the output easier to read.
+
+## Step 9: Iterating Through Products
+
+Line 14:
+
+`for product in products:`
+
+- Iterates through all the product elements found on the webpage.
+- Each iteration processes one product.
+- The current product element is stored in `product`.
+
+External question: Why is a for loop used?
+
+Answer: A for loop is used to process each product one by one because the webpage contains multiple products.
+
+## Step 10: Extracting Product Name
+
+Line 15:
+
+`name = product.h3.a["title"]`
+
+This line extracts the product name.
+
+Understanding the expression:
+
+- `product` represents the current product container.
+- `.h3` accesses the h3 heading element.
+- `.a` accesses the anchor or hyperlink inside the heading.
+- `["title"]` retrieves the value of its title attribute.
+
+The extracted product name is stored in `name`.
+
+External question: What is an anchor tag?
+
+Answer: The HTML `<a>` tag creates a hyperlink to another webpage or resource.
+
+External question: What is the title attribute?
+
+Answer: It provides additional information about an HTML element. Here, it contains the full product name.
+
+## Step 11: Extracting Product Price
+
+Line 16:
+
+`price = product.find("p", class_="price_color").text`
+
+This line extracts the product price.
+
+Understanding the expression:
+
+- `product.find()` searches within the current product.
+- `"p"` specifies the paragraph tag.
+- `class_="price_color"` searches for the paragraph with the class `price_color`.
+- `.text` extracts the visible text inside the HTML element.
+
+The price is stored in `price`.
+
+Example:
+
+```
+£51.77
+```
+
+External question: Why is `.text` used?
+
+Answer: `.text` extracts the text content from an HTML element, excluding the HTML tags.
+
+## Step 12: Extracting the Product Link
+
+Line 17:
+
+`link = urljoin(url, product.h3.a["href"])`
+
+This line creates the complete URL for the product.
+
+Understanding the expression:
+
+- `url` is the base website address.
+- `product.h3.a` accesses the product's anchor tag.
+- `["href"]` extracts the hyperlink destination.
+- `urljoin()` combines the base URL with the relative link.
+
+The complete product link is stored in `link`.
+
+External question: What is href?
+
+Answer: `href` is an HTML attribute that specifies the destination URL of a hyperlink.
+
+## Step 13: Extracting Availability
+
+Line 18–20:
+
+```
+availability = product.find(    "p", class_="instock availability").text.strip()
+```
+
+This line extracts the product availability information.
+
+Understanding each part:
+
+- `product.find()` searches within the current product.
+- `"p"` specifies the paragraph tag.
+- `class_="instock availability"` identifies the availability paragraph.
+- `.text` extracts its text.
+- `.strip()` removes unnecessary spaces and newline characters from the beginning and end.
+
+The extracted information is stored in `availability`.
+
+Example:
+
+```
+In stock
+```
+
+External question: What is strip()?
+
+Answer: `strip()` removes leading and trailing whitespace characters from a string.
+
+## Step 14: Printing Product Information
+
+Line 21:
+
+`print("\nProduct Name:", name)`
+
+- Prints the product name.
+- `\n` adds a blank line before the product details.
+
+Line 22:
+
+`print("Product Price:", price)`
+
+\- Prints the extracted price.
+
+Line 23:
+
+`print("Availability:", availability)`
+
+\- Prints whether the product is available.
+
+Line 24:
+
+`print("Product Link:", link)`
+
+\- Prints the complete product URL.
+
+These statements display the extracted information for each product.
+
+## Step 15: Handling Unsuccessful Requests
+
+Line 25:
+
+`else:`
+
+- Executes when the status code is not 200.
+- Handles unsuccessful HTTP responses.
+
+Line 26:
+
+`print("Unable to access website.")`
+
+\- Displays an error message.
+
+Line 27:
+
+`print("Status Code:", response.status_code)`
+
+- Displays the actual HTTP status code.
+- Helps identify why the request was unsuccessful.
+
+# 4. Complete Output Explanation
+
+The actual output depends on the website's current product information and availability.
+
+Example:
+
+```
+E-Commerce Website Product Information
+--------------------------------------
+
+Product Name: A Light in the Attic
+Product Price: £51.77
+Availability: In stock
+Product Link: https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html
+
+Product Name: Tipping the Velvet
+Product Price: £53.74
+Availability: In stock
+Product Link: https://books.toscrape.com/catalogue/tipping-the-velvet_999/index.html
+```
+
+The program continues printing details for every product found on the homepage.
+
+Explanation of the output:
+
+| Output        | Explanation                       |
+| ------------- | --------------------------------- |
+| Product Name  | Name of the book.                 |
+| Product Price | Selling price of the book.        |
+| Availability  | Whether the book is in stock.     |
+| Product Link  | Complete URL of the product page. |
+
+If the website returns a status code other than 200, the output will be:
+
+```
+Unable to access website.
+Status Code: 404
+```
+
+This is only an example of an unsuccessful response.
+
+# 5. Complete AIM-Based Theory
+
+### Q1. What is Web Scraping?
+
+Web Scraping is the automated process of extracting data from websites using programming languages such as Python.
+
+### Q2. What are the applications of Web Scraping?
+
+1. Price comparison.
+2. Product data collection.
+3. Market research.
+4. News collection.
+5. Competitor analysis.
+6. Research and data analysis.
+
+### Q3. Which libraries are used in this practical?
+
+- Requests.
+- BeautifulSoup.
+- urllib.
+- Matplotlib is not used in this particular program.
+
+### Q4. What is the purpose of the Requests library?
+
+It sends HTTP requests to websites and retrieves their responses.
+
+### Q5. What is BeautifulSoup?
+
+BeautifulSoup is a Python library used to parse HTML and XML documents.
+
+### Q6. What is HTML?
+
+HTML stands for HyperText Markup Language. It defines the structure of webpages.
+
+### Q7. What is an HTML tag?
+
+An HTML tag defines an element on a webpage, such as a heading, paragraph or hyperlink.
+
+### Q8. What is an HTML attribute?
+
+An attribute provides additional information about an HTML element, such as `class`, `href` and `title`.
+
+### Q9. What is an HTTP request?
+
+An HTTP request is a message sent by a client to a web server to request or send information.
+
+### Q10. What is an HTTP response?
+
+An HTTP response is the message returned by the server after processing a client's request.
+
+### Q11. What is an HTTP GET request?
+
+GET is an HTTP method used to retrieve information from a server.
+
+### Q12. What is a status code?
+
+A status code is a numerical value returned by the server that indicates the result of an HTTP request.
+
+### Q13. What does status code 200 indicate?
+
+It indicates that the request was successful.
+
+### Q14. What is the difference between find() and find_all()?
+
+`find()` returns the first matching element, whereas `find_all()` returns all matching elements.
+
+### Q15. What is HTML parsing?
+
+HTML parsing is the process of analyzing the HTML structure to identify and extract required elements.
+
+### Q16. What is a User-Agent?
+
+A User-Agent is an HTTP header that identifies the client making the request.
+
+### Q17. What is urljoin()?
+
+It combines a base URL and a relative URL to generate a complete URL.
+
+### Q18. What is the difference between text and href?
+
+- `text` extracts the text content of an HTML element.
+- `href` contains the destination URL of a hyperlink.
+
+### Q19. What is the purpose of strip()?
+
+It removes leading and trailing whitespace characters from a string.
+
+### Q20. What are the limitations of Web Scraping?
+
+- Websites may change their HTML structure.
+- Some websites block automated requests.
+- Dynamic websites may require JavaScript execution.
+- Network failures may interrupt scraping.
+- Website terms and access restrictions must be respected.
+
+# 6. External Viva Questions and Answers
+
+| No. | Question                                              | Answer                                                                                         |
+| --- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 1   | What is the aim of this practical?                    | To extract product information from an e-commerce website.                                     |
+| 2   | What is Web Scraping?                                 | Automated extraction of website data.                                                          |
+| 3   | Which website is used?                                | Books to Scrape.                                                                               |
+| 4   | Which language is used?                               | Python.                                                                                        |
+| 5   | Which library sends HTTP requests?                    | Requests.                                                                                      |
+| 6   | Which library parses HTML?                            | BeautifulSoup.                                                                                 |
+| 7   | What is bs4?                                          | The package used to import BeautifulSoup.                                                      |
+| 8   | What is HTML?                                         | HyperText Markup Language.                                                                     |
+| 9   | What is HTTP?                                         | HyperText Transfer Protocol.                                                                   |
+| 10  | What is GET?                                          | An HTTP method used to retrieve data.                                                          |
+| 11  | What is status code 200?                              | Successful request.                                                                            |
+| 12  | What is status code 404?                              | Resource not found.                                                                            |
+| 13  | What is a User-Agent?                                 | An HTTP header identifying the client.                                                         |
+| 14  | Why is timeout used?                                  | To prevent indefinite waiting for a response.                                                  |
+| 15  | What is BeautifulSoup used for?                       | Parsing HTML and extracting data.                                                              |
+| 16  | What is a parser?                                     | A tool that analyzes document structure.                                                       |
+| 17  | What is find()?                                       | Finds the first matching element.                                                              |
+| 18  | What is find_all()?                                   | Finds all matching elements.                                                                   |
+| 19  | Why is class\_ used?                                  | Because class is a reserved Python keyword.                                                    |
+| 20  | What does .text do?                                   | Extracts text from an HTML element.                                                            |
+| 21  | What does strip() do?                                 | Removes leading and trailing whitespace.                                                       |
+| 22  | What is href?                                         | Hyperlink destination attribute.                                                               |
+| 23  | What is title?                                        | An HTML attribute containing additional information.                                           |
+| 24  | What is urljoin()?                                    | Combines base and relative URLs.                                                               |
+| 25  | What is a relative URL?                               | A URL expressed relative to a base URL.                                                        |
+| 26  | What is an absolute URL?                              | A complete URL containing the necessary address information.                                   |
+| 27  | What is the difference between crawling and scraping? | Crawling discovers webpages; scraping extracts information.                                    |
+| 28  | What happens if the request fails?                    | The else block displays an error and status code.                                              |
+| 29  | Can BeautifulSoup send HTTP requests?                 | No. Requests is used to fetch the webpage; BeautifulSoup parses it.                            |
+| 30  | Can web scraping extract data from every website?     | Not necessarily. Access restrictions, dynamic content and website policies can limit scraping. |
+
+# 7. Quick Revision Table
+
+| Function / Concept     | Purpose                        |
+| ---------------------- | ------------------------------ |
+| `import requests`      | Imports Requests library       |
+| `BeautifulSoup`        | Parses HTML                    |
+| `urljoin()`            | Creates complete URLs          |
+| `requests.get()`       | Sends GET request              |
+| `headers`              | Sends HTTP headers             |
+| `User-Agent`           | Identifies the client          |
+| `timeout=15`           | Sets request timeout           |
+| `response.status_code` | Checks HTTP status             |
+| `response.text`        | Gets HTML response as text     |
+| `html.parser`          | Parses HTML                    |
+| `soup.find()`          | Finds first matching element   |
+| `soup.find_all()`      | Finds all matching elements    |
+| `class_`               | Searches by HTML class         |
+| `.text`                | Extracts text                  |
+| `["title"]`            | Extracts title attribute       |
+| `["href"]`             | Extracts hyperlink             |
+| `.strip()`             | Removes surrounding whitespace |
+| `for` loop             | Processes products one by one  |
+| `if-else`              | Handles success and failure    |
+
+# 8. Important Technical Points and Limitations
+
+### 1. Why do we use `class_` instead of `class`?
+
+Because `class` is a reserved keyword in Python. BeautifulSoup uses `class_` to search for HTML elements by class name.
+
+### 2. Can BeautifulSoup directly access a website?
+
+No. BeautifulSoup parses HTML content. Requests is used to retrieve the webpage.
+
+### 3. What is the difference between `response.text` and `response.content`?
+
+| response.text                              | response.content                                              |
+| ------------------------------------------ | ------------------------------------------------------------- |
+| Returns response body as a string.         | Returns response body as bytes.                               |
+| Uses character encoding to decode content. | Provides raw bytes.                                           |
+| Convenient for HTML text parsing.          | Useful when working with binary data or controlling decoding. |
+
+### 4. Why do we use `urljoin()`?
+
+Because the product's `href` may contain a relative URL rather than a complete URL. `urljoin()` converts it into an absolute URL.
+
+### 5. What happens if a product element is missing?
+
+An expression such as `product.find(...).text` may raise an `AttributeError` if the element is not found. A more robust scraper should check whether the element exists before accessing `.text`.
+
+### 6. Does this program scrape the entire website?
+
+No. It scrapes the product information found on the homepage only. It does not automatically visit all pagination pages or individual product pages.
+
+### 7. Does the program store extracted information in a CSV file?
+
+No. It only displays the extracted information using `print()`. We could extend it to save the information into a CSV file using Pandas.
+
+### 8. What is the difference between static and dynamic websites?
+
+| Static Website                                          | Dynamic Website                                       |
+| ------------------------------------------------------- | ----------------------------------------------------- |
+| Content is generally present in the HTML response.      | Content may be generated or updated using JavaScript. |
+| Often easier to scrape with Requests and BeautifulSoup. | May require browser automation or an appropriate API. |
+
+### 9. Is web scraping legal?
+
+It depends on the website, the data being collected, applicable laws and the method of access. Always respect website terms, access restrictions, privacy requirements and applicable rules.
+
+# 9. Explain This Practical to the External Examiner
+
+"This practical implements web scraping using Python. First, we import Requests, BeautifulSoup and urljoin. We specify the URL of the Books to Scrape website and send an HTTP GET request using Requests. We check whether the response status code is 200. If the request is successful, we parse the HTML content using BeautifulSoup. Then, we use find_all() to identify all product containers. Using a for loop, we extract each product's name, price, availability and hyperlink. We use urljoin() to convert relative product links into complete URLs. Finally, we display the extracted product information. If the request is unsuccessful, we display the error status code."
+
+# 10. Most Important Questions to Prepare First
+
+Prioritize these questions for your external viva:
+
+1. What is Web Scraping?
+2. What is the difference between Web Scraping and Web Crawling?
+3. What is BeautifulSoup?
+4. What is the Requests library?
+5. What is HTML?
+6. What is an HTML tag and attribute?
+7. What is HTTP?
+8. What is an HTTP GET request?
+9. What does status code 200 mean?
+10. What is the purpose of User-Agent?
+11. Why is timeout used?
+12. What is HTML parsing?
+13. What is the difference between find() and find_all()?
+14. Why do we use class\_ instead of class?
+15. What is the use of .text?
+16. What is the use of strip()?
+17. What are href and title?
+18. Why is urljoin() used?
+19. Can BeautifulSoup send requests?
+20. What is the difference between static and dynamic websites?
+
+Most important concept
+
+Remember the complete workflow:
+
+Send HTTP request → Check status code → Retrieve HTML → Parse HTML using BeautifulSoup → Find product elements → Extract name, price, availability and link → Display the information.

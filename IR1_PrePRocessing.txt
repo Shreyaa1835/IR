@@ -1,0 +1,583 @@
+# Practical: Text Preprocessing using NLTK
+
+## 1. AIM
+
+To perform text preprocessing using the NLTK library by applying the following techniques:
+
+1. Convert text into lowercase.
+2. Remove special characters and numbers.
+3. Tokenize the text into individual words.
+4. Remove stop words.
+5. Perform stemming to convert words into their root form.
+
+---
+
+## 2. Concepts Used in This Practical
+
+### 1. NLP (Natural Language Processing)
+NLP is a branch of Artificial Intelligence that enables computers to understand, process and analyze human language.
+
+**Example:** Chatbots, language translation, sentiment analysis and text summarization.
+
+### 2. NLTK
+NLTK stands for Natural Language Toolkit.
+
+It is a Python library used for processing human language and performing NLP tasks.
+
+**Uses:**
+- Tokenization
+- Stop word removal
+- Stemming
+- Lemmatization
+- Text analysis
+
+### 3. Text Preprocessing
+Text preprocessing is the process of cleaning and preparing raw text before providing it to an NLP or Machine Learning model.
+
+**Example:**  
+Original: `"The Students are Learning NLP!"`  
+Preprocessed: `"student learn nlp"`
+
+### 4. Tokenization
+Tokenization is the process of dividing a sentence or paragraph into smaller units called tokens.
+
+**Example:**
+
+Input:
+`"I love Python programming"`
+
+Output:
+`['I', 'love', 'Python', 'programming']`
+
+### 5. Stop Word Removal
+Stop words are commonly used words that generally carry less importance for many NLP tasks.
+
+Examples: `is`, `the`, `a`, `an`, `and`, `from`, `to`.
+
+Removing these words helps reduce unnecessary text.
+
+### 6. Stemming
+Stemming is the process of reducing words to their root or stem form by removing prefixes or suffixes.
+
+Examples:
+
+| Original Word | Stemmed Word |
+|---|---|
+| playing | play |
+| studies | studi |
+| processes | process |
+| finding | find |
+| unnecessary | unnecessari |
+
+**Important:** Stemming does not always produce a meaningful English dictionary word.
+
+---
+
+# 3. Line-by-Line Code Explanation
+
+### Step 1: Importing Libraries
+
+**Line 1:**
+`import nltk`
+
+- Imports the NLTK library.
+- NLTK is used for Natural Language Processing.
+- It provides tools for tokenization, stemming and stop word removal.
+
+**External question: What is NLTK?**
+
+Answer: NLTK stands for Natural Language Toolkit. It is a Python library used for processing and analyzing human language.
+
+**Line 2:**
+`import re`
+
+- Imports Python's regular expression module.
+- It is used to search, match and replace patterns in text.
+- Here, it helps remove special characters and numbers.
+
+**External question: What is Regular Expression?**
+
+Answer: A regular expression is a pattern used to search, match or manipulate text.
+
+**Line 3:**
+`from nltk.corpus import stopwords`
+
+- Imports the stopwords dataset from NLTK.
+- It contains commonly used words in different languages.
+- We will use English stop words in this practical.
+
+**Line 4:**
+`from nltk.stem import PorterStemmer`
+
+- Imports PorterStemmer from NLTK.
+- It is used to convert words into their stem form.
+
+**External question: What is Porter Stemmer?**
+
+Answer: Porter Stemmer is an algorithm used to reduce English words to their stem by removing common suffixes.
+
+### Step 2: Downloading Stop Words
+
+**Line 5:**
+`nltk.download('stopwords')`
+
+- Downloads the stopwords dataset required by NLTK.
+- Without downloading it for the first time, the program may show a missing resource error.
+- It downloads the English stop words dataset along with other available language lists.
+
+**External question: Why do we download stopwords?**
+
+Answer: We download stopwords because NLTK needs this dataset to identify and remove common words from the text.
+
+### Step 3: Defining Original Text
+
+**Line 6–9:**
+`text = """..."""`
+
+- Stores the paragraph in a variable named `text`.
+- Triple quotation marks allow us to write text across multiple lines.
+- This is the original input given to the preprocessing program.
+
+**External question: Why are triple quotes used?**
+
+Answer: Triple quotes are used to store multi-line strings in Python.
+
+### Step 4: Displaying Original Text
+
+**Line 10–11:**
+`print("Original Text:")`  
+`print(text)`
+
+- Displays the heading and original paragraph.
+- This helps us compare the original text with the preprocessed text.
+
+### Step 5: Converting Text into Lowercase
+
+**Line 12:**
+`text = text.lower()`
+
+- Converts all uppercase letters into lowercase.
+- This ensures that words with different capitalization are treated as the same word.
+
+**Example:**
+
+`"Information Retrieval"` becomes `"information retrieval"`.
+
+**External question: Why convert text into lowercase?**
+
+Answer: To maintain consistency and avoid treating uppercase and lowercase versions of the same word as different words.
+
+### Step 6: Removing Special Characters and Numbers
+
+**Line 13:**
+`text = re.sub(r'[^a-z\s]', '', text)`
+
+This is one of the most important lines.
+
+- `re.sub()` is used to replace matching patterns.
+- `r'...'` represents a raw string.
+- `[^a-z\s]` identifies characters that are NOT lowercase English letters or whitespace.
+- `a-z` represents lowercase letters from a to z.
+- `\s` represents whitespace, including spaces and newline characters.
+- `''` means replace the matching characters with nothing.
+
+**Example:**
+
+Input: `"Hello! NLP 123"`  
+Output: `"hello nlp "`
+
+**External question: What is the use of re.sub()?**
+
+Answer: `re.sub()` replaces matching patterns in a string with another value. Here, it removes special characters and numbers.
+
+### Step 7: Tokenization
+
+**Line 14:**
+`words = text.split()`
+
+- Splits the cleaned text into individual words.
+- Stores all words in a list called `words`.
+- Each individual word becomes a separate token.
+
+**Example:**
+
+Input: `"information retrieval is useful"`
+
+Output:
+`['information', 'retrieval', 'is', 'useful']`
+
+**External question: What is the difference between a string and a list?**
+
+Answer: A string stores text as a sequence of characters, whereas a list stores multiple elements as separate items.
+
+**Line 15–16:**
+`print("\nTokenized Words:")`  
+`print(words)`
+
+- Displays the tokenized words.
+- `\n` inserts a new line before the heading.
+
+### Step 8: Loading English Stop Words
+
+**Line 17:**
+`stop_words = set(stopwords.words('english'))`
+
+- `stopwords.words('english')` retrieves the English stop words.
+- `set()` converts them into a set.
+- A set stores unique elements and provides efficient membership checking.
+
+**External question: Why use a set instead of a list?**
+
+Answer: A set provides faster membership checking when determining whether a word is a stop word.
+
+### Step 9: Creating an Empty List
+
+**Line 18:**
+`filtered_words = []`
+
+- Creates an empty list.
+- This list will store words after removing stop words.
+
+### Step 10: Removing Stop Words
+
+**Line 19:**
+`for word in words:`
+
+- Starts a for loop.
+- Iterates through every word in the tokenized list.
+- Each word is temporarily stored in the variable `word`.
+
+**Line 20:**
+`if word not in stop_words:`
+
+- Checks whether the current word is NOT present in the stop words set.
+- If the word is not a stop word, the condition becomes true.
+
+**Line 21:**
+`filtered_words.append(word)`
+
+- Adds the word to the `filtered_words` list.
+- Stop words are skipped and are not added.
+
+**Example:**
+
+Before stop word removal:
+
+`['information', 'retrieval', 'is', 'the', 'process', 'of', 'finding']`
+
+After stop word removal:
+
+`['information', 'retrieval', 'process', 'finding']`
+
+**External question: Why do we remove stop words?**
+
+Answer: Stop word removal reduces unnecessary words and helps focus on meaningful terms for many NLP tasks.
+
+### Step 11: Displaying Filtered Words
+
+**Line 22–23:**
+`print("\nAfter Stop Word Removal:")`  
+`print(filtered_words)`
+
+- Displays the list after removing stop words.
+- This shows the result of the stop word removal process.
+
+### Step 12: Creating a Stemming Object
+
+**Line 24:**
+`stemmer = PorterStemmer()`
+
+- Creates an object of the PorterStemmer class.
+- This object is used to perform stemming on individual words.
+
+**External question: Which stemming algorithm is used here?**
+
+Answer: Porter Stemming Algorithm.
+
+### Step 13: Creating an Empty List for Stemmed Words
+
+**Line 25:**
+`stemmed_words = []`
+
+- Creates an empty list.
+- It stores the stemmed versions of the filtered words.
+
+### Step 14: Performing Stemming
+
+**Line 26:**
+`for word in filtered_words:`
+
+- Iterates through each word remaining after stop word removal.
+
+**Line 27:**
+`stemmed_words.append(stemmer.stem(word))`
+
+- `stemmer.stem(word)` converts the current word into its stem form.
+- `append()` adds the stemmed word to the `stemmed_words` list.
+
+**Example:**
+
+| Original Word | Stemmed Word |
+|---|---|
+| finding | find |
+| removes | remov |
+| unnecessary | unnecessari |
+| words | word |
+| reduces | reduc |
+
+**External question: What is the difference between stemming and stop word removal?**
+
+Answer:
+- Stop word removal eliminates commonly used words.
+- Stemming reduces remaining words to their stem form.
+
+### Step 15: Displaying Stemmed Words
+
+**Line 28–29:**
+`print("\nAfter Stemming:")`  
+`print(stemmed_words)`
+
+- Displays the final list of stemmed words.
+- These words have undergone stop word removal and stemming.
+
+### Step 16: Displaying Final Preprocessed Text
+
+**Line 30:**
+`print("\nFinal Preprocessed Text:")`
+
+- Displays the heading for the final output.
+
+**Line 31:**
+`print(" ".join(stemmed_words))`
+
+- `" ".join()` combines all elements of the list into a single string.
+- A space is inserted between every word.
+- Displays the final preprocessed paragraph.
+
+**Example:**
+
+List:
+`['inform', 'retriev', 'process', 'find']`
+
+Final string:
+`inform retriev process find`
+
+**External question: What is the use of join()?**
+
+Answer: The `join()` method combines elements of a list into a single string using a specified separator.
+
+---
+
+# 4. Complete Output Explanation
+
+### Original Input
+
+```text
+Information Retrieval is the process of finding relevant
+information from a large collection of documents.
+Text preprocessing removes unnecessary words and reduces words
+to their root form.
+```
+
+### Output
+
+The exact output of the preprocessing stages is:
+
+**1. Original Text:**
+The original paragraph is displayed as entered.
+
+**2. Tokenized Words:**
+
+```text
+['information', 'retrieval', 'is', 'the', 'process', 'of',
+ 'finding', 'relevant', 'information', 'from', 'a', 'large',
+ 'collection', 'of', 'documents', 'text', 'preprocessing',
+ 'removes', 'unnecessary', 'words', 'and', 'reduces', 'words',
+ 'to', 'their', 'root', 'form']
+```
+
+**3. After Stop Word Removal:**
+
+```text
+['information', 'retrieval', 'process', 'finding', 'relevant',
+ 'information', 'large', 'collection', 'documents', 'text',
+ 'preprocessing', 'removes', 'unnecessary', 'words', 'reduces',
+ 'words', 'root', 'form']
+```
+
+**4. After Stemming:**
+
+```text
+['inform', 'retriev', 'process', 'find', 'relev', 'inform',
+ 'larg', 'collect', 'document', 'text', 'preprocess',
+ 'remov', 'unnecessari', 'word', 'reduc', 'word', 'root', 'form']
+```
+
+**5. Final Preprocessed Text:**
+
+```text
+inform retriev process find relev inform larg collect document text preprocess remov unnecessari word reduc word root form
+```
+
+### How to Understand the Complete Output?
+
+The program performs preprocessing in the following order:
+
+| Stage | Operation | Result |
+|---|---|---|
+| 1 | Original text | Raw paragraph |
+| 2 | Lowercase | All letters converted to lowercase |
+| 3 | Cleaning | Special characters and numbers removed |
+| 4 | Tokenization | Text divided into individual words |
+| 5 | Stop word removal | Common words removed |
+| 6 | Stemming | Words reduced to stem form |
+| 7 | Final output | Stemmed words combined into a string |
+
+**Important:** The output shown above is based on NLTK's standard English stop words and PorterStemmer behavior.
+
+---
+
+# 5. Complete AIM-Based Theory
+
+### Q1. What is Text Preprocessing?
+
+Text preprocessing is the process of cleaning and transforming raw text into a structured format suitable for NLP and Machine Learning algorithms.
+
+### Q2. Why is text preprocessing important?
+
+It:
+- Removes unnecessary information.
+- Reduces text complexity.
+- Improves consistency.
+- Helps NLP models process text effectively.
+
+### Q3. What are the main steps of text preprocessing?
+
+1. Lowercase conversion
+2. Removing special characters
+3. Tokenization
+4. Stop word removal
+5. Stemming
+
+### Q4. What is the difference between Stemming and Lemmatization?
+
+| Stemming | Lemmatization |
+|---|---|
+| Removes prefixes or suffixes using rules. | Converts words into their dictionary base form. |
+| May produce meaningless words. | Usually produces meaningful words. |
+| Faster and simpler. | More linguistically informed. |
+| Example: studies → studi | Example: studies → study |
+
+### Q5. What is the difference between Tokenization and Stemming?
+
+- Tokenization divides text into individual words.
+- Stemming reduces those individual words to their root or stem form.
+
+### Q6. What is a Corpus in NLTK?
+
+A corpus is a collection of written or spoken text used for language processing and analysis.
+
+### Q7. What are the applications of Text Preprocessing?
+
+- Search engines
+- Information retrieval
+- Sentiment analysis
+- Spam detection
+- Text classification
+- Chatbots
+- Document summarization
+
+### Q8. What is Information Retrieval?
+
+Information Retrieval is the process of finding relevant information or documents from a large collection based on a user's query.
+
+**Example:** Searching for a particular topic on Google.
+
+### Q9. What is the difference between a token and a stop word?
+
+A token is an individual unit of text, such as a word. A stop word is a commonly used word that may be removed during preprocessing.
+
+### Q10. Does stemming always produce a meaningful English word?
+
+No. Stemming may produce a non-dictionary word because it removes word endings using predefined rules.
+
+Example: `unnecessary → unnecessari`.
+
+---
+
+# 6. External Viva Questions and Answers
+
+| No. | Question | Answer |
+|---|---|---|
+| 1 | What is NLP? | Natural Language Processing, a branch of AI that deals with human language. |
+| 2 | Which library is used in this practical? | NLTK. |
+| 3 | What is the full form of NLTK? | Natural Language Toolkit. |
+| 4 | Which module removes special characters? | `re` module. |
+| 5 | What is the use of `lower()`? | Converts text into lowercase. |
+| 6 | What is tokenization? | Dividing text into smaller units called tokens. |
+| 7 | Which function is used for tokenization here? | `split()`. |
+| 8 | What are stop words? | Common words that may carry less importance for a particular NLP task. |
+| 9 | Give examples of stop words. | is, the, a, an, and, from. |
+| 10 | Which function retrieves stop words? | `stopwords.words('english')`. |
+| 11 | Why is `set()` used? | For efficient membership checking and unique elements. |
+| 12 | What is stemming? | Reducing words to their stem form. |
+| 13 | Which stemmer is used? | PorterStemmer. |
+| 14 | What is the use of `append()`? | Adds an element to a list. |
+| 15 | What is the use of `join()`? | Combines list elements into a string. |
+| 16 | What does `re.sub()` do? | Replaces matching patterns in text. |
+| 17 | What does `\s` represent? | Whitespace characters. |
+| 18 | What does `[^a-z\s]` mean? | Any character other than lowercase letters and whitespace. |
+| 19 | What is lemmatization? | Converting words into their meaningful dictionary base form. |
+| 20 | What is the final output of this practical? | A cleaned text containing stemmed words. |
+
+---
+
+# 7. Important Differences for Viva
+
+| Concept | Meaning | Example |
+|---|---|---|
+| Text Preprocessing | Cleaning and preparing text | Removing unwanted words |
+| Lowercase Conversion | Converting all letters to lowercase | HELLO → hello |
+| Cleaning | Removing special characters and numbers | Hello!123 → Hello |
+| Tokenization | Splitting text into words | I love AI → [I, love, AI] |
+| Stop Word Removal | Removing common words | is, the, a |
+| Stemming | Reducing words to stem form | playing → play |
+| Lemmatization | Finding dictionary base form | better → good (depending on context) |
+
+---
+
+# 8. Quick Revision Before Practical
+
+| Function / Library | Purpose |
+|---|---|
+| `import nltk` | Imports NLTK library |
+| `import re` | Handles regular expressions |
+| `nltk.download()` | Downloads NLTK datasets |
+| `lower()` | Converts text to lowercase |
+| `re.sub()` | Removes unwanted characters |
+| `split()` | Splits text into tokens |
+| `stopwords.words()` | Retrieves stop words |
+| `set()` | Creates a set |
+| `append()` | Adds elements to a list |
+| `PorterStemmer()` | Creates a stemming object |
+| `stem()` | Converts a word into its stem |
+| `join()` | Combines words into a string |
+
+---
+
+# 9. Explain This Practical to the External Examiner
+
+You can explain it like this:
+
+"This practical demonstrates text preprocessing using the NLTK library in Python. First, we import the required libraries such as NLTK and Regular Expressions. We provide an input paragraph and convert it into lowercase. Then, we remove special characters and numbers using regular expressions. After that, we perform tokenization to divide the paragraph into individual words. Next, we remove common stop words using the NLTK stopwords corpus. Finally, we apply Porter Stemming to reduce the remaining words to their stem form and combine them into a final preprocessed text. This process is useful in NLP applications such as information retrieval, sentiment analysis and text classification."
+
+### Most Important Points to Remember
+
+1. **NLTK** – Used for Natural Language Processing.
+2. **re.sub()** – Removes unwanted characters.
+3. **split()** – Performs tokenization.
+4. **Stop words** – Common words removed during preprocessing.
+5. **PorterStemmer** – Reduces words to their stem form.
+6. **join()** – Combines the final words into a string.
+
+**One important viva point:** Stemming and lemmatization are not the same. Stemming may produce words that are not present in the English dictionary, whereas lemmatization aims to produce meaningful dictionary forms.

@@ -1,0 +1,1113 @@
+# Practical: E-mail Spam Filtering Using Naive Bayes
+
+## 1. AIM
+
+To implement an E-mail Spam Filtering System using the Multinomial Naive Bayes algorithm in Python to classify email messages as Spam or Ham (Not Spam).
+
+The practical involves:
+
+1. Loading the spam email dataset.
+2. Cleaning and preprocessing the dataset.
+3. Converting text messages into numerical features using CountVectorizer.
+4. Splitting the dataset into training and testing sets.
+5. Training a Multinomial Naive Bayes classifier.
+6. Predicting whether an email is spam or ham.
+7. Evaluating model performance using accuracy, confusion matrix and classification report.
+
+# 2. Concepts Used in This Practical
+
+### 1. Spam Email Filtering
+
+Spam filtering is the process of identifying unwanted or unwanted bulk messages and separating them from legitimate messages.
+
+Examples:
+
+- Spam: "Congratulations! You won a free lottery. Click here."
+- Ham: "Hi, are we meeting at 5 PM today?"
+
+Ham means a legitimate or non-spam message.
+
+### 2. Naive Bayes Algorithm
+
+Naive Bayes is a supervised Machine Learning classification algorithm based on Bayes' Theorem.
+
+It predicts the class of an input using probabilities.
+
+In this practical, it calculates whether an email is more likely to be:
+
+- Spam
+- Ham
+
+The word naive refers to the assumption that features are conditionally independent given the class.
+
+For example, the algorithm treats the occurrence of words such as "free", "offer" and "win" as independent pieces of evidence once the email class is known.
+
+### 3. Bayes' Theorem
+
+Bayes' Theorem calculates the probability of an event using previously available information.
+
+\\(P(A|B) = \frac{P(B|A)P(A)}{P(B)}\\)
+
+\\(P(A\mid B)=\frac{0.85(0.20)}{0.25}=0.68\\)
+
+\\(P(A)\\)
+
+\\(P(B\mid A)\\)
+
+\\(P(B\mid \neg A)\\)
+
+\\(P(B)\\)= 0.25
+
+\\(P(B\cap A)\\)= 0.17
+
+\\(P(B\cap \neg A)\\)= 0.08
+
+Give feedback
+
+In spam filtering, we want to estimate:
+
+- Probability that an email is spam given its words.
+- Probability that an email is ham given its words.
+
+The classifier chooses the class with the higher posterior probability.
+
+### 4. Multinomial Naive Bayes
+
+Multinomial Naive Bayes is a Naive Bayes classification algorithm commonly used for text classification.
+
+It works particularly well with word-frequency or word-count features.
+
+Example:
+
+Suppose an email contains:
+
+`"Free offer free gift"`
+
+Word counts:
+
+| Word  | Count |
+| ----- | ----- |
+| free  | 2     |
+| offer | 1     |
+| gift  | 1     |
+
+The algorithm uses these word counts to classify the email.
+
+### 5. CountVectorizer
+
+CountVectorizer is a feature extraction technique provided by Scikit-learn.
+
+It converts text messages into numerical vectors based on the frequency of words.
+
+Machine Learning algorithms generally require numerical input, so we convert text into numbers before training the model.
+
+Example:
+
+Documents:
+
+- "I love Python"
+- "I love AI"
+
+Vocabulary:
+
+`['ai', 'love', 'python']`
+
+Count representation:
+
+| Document      | ai | love | python |
+| ------------- | -- | ---- | ------ |
+| I love Python | 0  | 1    | 1      |
+| I love AI     | 1  | 1    | 0      |
+
+This numerical representation is called a document-term matrix.
+
+### 6. Training and Testing Data
+
+The dataset is divided into two parts:
+
+- Training data: Used to train the model.
+- Testing data: Used to evaluate the model on data not used for fitting.
+
+In this practical, 80% of the data is used for training and 20% for testing.
+
+### 7. Model Evaluation
+
+The model is evaluated using:
+
+- Accuracy
+- Confusion Matrix
+- Precision
+- Recall
+- F1-score
+
+These metrics help us understand how effectively the model classifies emails.
+
+# 3. Line-by-Line Code Explanation
+
+## Step 1: Importing Libraries
+
+Line 1:
+
+`import pandas as pd`
+
+- Imports the Pandas library.
+- Used for loading and manipulating the dataset.
+- `pd` is an alias for Pandas.
+
+External question: What is Pandas?
+
+Answer: Pandas is a Python library used for data manipulation and analysis.
+
+Line 2:
+
+`from sklearn.model_selection import train_test_split`
+
+- Imports the `train_test_split()` function.
+- Used to divide the dataset into training and testing sets.
+
+External question: What is train_test_split?
+
+Answer: It is a Scikit-learn function used to split a dataset into training and testing portions.
+
+Line 3:
+
+`from sklearn.feature_extraction.text import CountVectorizer`
+
+- Imports CountVectorizer.
+- Converts text messages into numerical word-count vectors.
+- Makes text suitable for Machine Learning algorithms.
+
+Line 4:
+
+`from sklearn.naive_bayes import MultinomialNB`
+
+- Imports the Multinomial Naive Bayes classifier.
+- This is the algorithm used to classify emails as spam or ham.
+
+Line 5:
+
+`from sklearn.metrics import accuracy_score, classification_report, confusion_matrix`
+
+Imports three evaluation functions:
+
+- `accuracy_score`: Calculates the percentage of correct predictions.
+- `classification_report`: Displays precision, recall, F1-score and support.
+- `confusion_matrix`: Displays correct and incorrect predictions for each class.
+
+## Step 2: Loading the Dataset
+
+Line 6:
+
+`df = pd.read_csv("spam.csv", encoding="latin-1")`
+
+- Loads the `spam.csv` dataset into a Pandas DataFrame.
+- `encoding="latin-1"` specifies the character encoding used to read the file.
+- This helps avoid decoding errors when the file contains special characters.
+
+External question: What is encoding?
+
+Answer: Encoding is the method used to represent characters as bytes so that computers can store and read text.
+
+External question: Why use latin-1?
+
+Answer: It supports many Western European characters and can help read datasets containing special characters without Unicode decoding errors.
+
+## Step 3: Selecting Required Columns
+
+Line 7:
+
+`df = df.iloc[:, :2]`
+
+- Selects all rows and only the first two columns.
+- `:` means select all rows.
+- `:2` means select columns at positions 0 and 1.
+- Extra columns, if present, are ignored.
+
+External question: What is iloc?
+
+Answer: `iloc` is used to select rows and columns based on their integer positions.
+
+## Step 4: Renaming Columns
+
+Line 8:
+
+`df.columns = ["label", "message"]`
+
+- Renames the first column as `label`.
+- Renames the second column as `message`.
+
+Here:
+
+- `label` contains the class: spam or ham.
+- `message` contains the actual email text.
+
+External question: What is a label?
+
+Answer: A label is the target class that the Machine Learning model is trained to predict.
+
+## Step 5: Removing Missing Values
+
+Line 9:
+
+`df = df.dropna()`
+
+- Removes rows containing missing values.
+- Ensures that the training dataset has valid labels and messages.
+
+External question: What is dropna()?
+
+Answer: It removes rows or columns containing missing values. By default, it removes rows with at least one missing value.
+
+## Step 6: Cleaning the Labels
+
+Line 10:
+
+`df["label"] = df["label"].str.lower().str.strip()`
+
+This performs two operations:
+
+- `.str.lower()` converts labels into lowercase.
+- `.str.strip()` removes unnecessary spaces from the beginning and end.
+
+Example:
+
+```
+" SPAM " → "spam"
+"HAM" → "ham"
+```
+
+Why is this done?
+
+To maintain consistency in the class labels.
+
+## Step 7: Keeping Valid Classes
+
+Line 11:
+
+`df = df[df["label"].isin(["ham", "spam"])]`
+
+- Filters the dataset to retain only rows whose labels are `ham` or `spam`.
+- `.isin()` checks whether each label belongs to the specified list.
+- Any other label is removed.
+
+Example:
+
+If the dataset contains:
+
+```
+ham
+spam
+unknown
+```
+
+Only `ham` and `spam` are retained.
+
+External question: What is isin()?
+
+Answer: `isin()` checks whether values belong to a specified collection and returns True or False.
+
+## Step 8: Separating Input and Output Variables
+
+Line 12:
+
+`X = df["message"]`
+
+- Stores the email messages in variable `X`.
+- `X` represents the input features.
+
+Line 13:
+
+`y = df["label"]`
+
+- Stores the spam/ham labels in variable `y`.
+- `y` represents the target variable.
+
+External question: What is X and y in Machine Learning?
+
+Answer:
+
+- X represents input features.
+- y represents the target or output labels.
+
+## Step 9: Creating CountVectorizer
+
+Line 14:
+
+`vectorizer = CountVectorizer(stop_words="english")`
+
+- Creates a CountVectorizer object.
+- It converts text into numerical word counts.
+- `stop_words="english"` removes common English stop words such as "the", "is", "and" during feature extraction.
+
+External question: Why do we use CountVectorizer?
+
+Answer: Machine Learning algorithms need numerical input. CountVectorizer converts text into numerical word-frequency vectors.
+
+## Step 10: Converting Text into Numerical Vectors
+
+Line 15:
+
+`X = vectorizer.fit_transform(X)`
+
+This is a very important line.
+
+It performs two operations:
+
+1\. `fit()`
+
+- Learns the vocabulary from the email messages.
+- Identifies the unique words that will become features.
+
+2\. `transform()`
+
+\- Converts each email into a numerical vector based on word counts.
+
+`fit_transform()` performs both operations together.
+
+Example:
+
+Input:
+
+```
+Free offer free gift
+```
+
+Possible numerical representation:
+
+```
+free = 2
+offer = 1
+gift = 1
+```
+
+The output is generally stored as a sparse matrix to save memory.
+
+External question: What is a sparse matrix?
+
+Answer: A sparse matrix is a matrix in which most values are zero. It stores non-zero values efficiently to save memory.
+
+## Step 11: Splitting Training and Testing Data
+
+Line 16–18:
+
+```
+X_train, X_test, y_train, y_test = train_test_split(    X, y, test_size=0.2, random_state=42, stratify=y)
+```
+
+This function divides the dataset into training and testing sets.
+
+Understanding the parameters:
+
+| Parameter         | Meaning                                      |
+| ----------------- | -------------------------------------------- |
+| `X`               | Input features                               |
+| `y`               | Target labels                                |
+| `test_size=0.2`   | 20% testing data                             |
+| `random_state=42` | Keeps the random split reproducible          |
+| `stratify=y`      | Maintains the class proportions in both sets |
+
+The output variables are:
+
+- `X_train`: Training messages.
+- `X_test`: Testing messages.
+- `y_train`: Training labels.
+- `y_test`: Actual testing labels.
+
+Example:
+
+For 1000 messages:
+
+| Dataset  | Number of Messages |
+| -------- | ------------------ |
+| Training | 800                |
+| Testing  | 200                |
+
+External question: Why do we split the dataset?
+
+Answer: To train the model on one portion and evaluate its performance on unseen data.
+
+External question: What is random_state?
+
+Answer: It fixes the random seed so that the same data split can be reproduced.
+
+External question: What is stratify=y?
+
+Answer: It maintains approximately the same proportion of spam and ham messages in both training and testing sets.
+
+## Step 12: Creating the Model
+
+Line 19:
+
+`model = MultinomialNB()`
+
+- Creates an object of the Multinomial Naive Bayes classifier.
+- This algorithm is suitable for text classification using word-count features.
+
+External question: Why use Multinomial Naive Bayes?
+
+Answer: Because it is suitable for discrete word-count features and is commonly used in spam detection and text classification.
+
+## Step 13: Training the Model
+
+Line 20:
+
+`model.fit(X_train, y_train)`
+
+- Trains the model using the training data.
+- `X_train` contains numerical word-count vectors.
+- `y_train` contains the corresponding spam/ham labels.
+- The model learns the word patterns associated with each class.
+
+External question: What does fit() do?
+
+Answer: The `fit()` function trains a Machine Learning model using input features and their corresponding labels.
+
+## Step 14: Predicting Testing Labels
+
+Line 21:
+
+`y_pred = model.predict(X_test)`
+
+- Uses the trained model to predict the class of each testing message.
+- Stores predicted labels in `y_pred`.
+- Each prediction will be either `spam` or `ham`.
+
+External question: What is the difference between fit() and predict()?
+
+Answer:
+
+- `fit()` trains the model.
+- `predict()` uses the trained model to generate predictions for new input data.
+
+## Step 15: Displaying the Practical Title
+
+Line 22:
+
+`print("E-mail Spam Filtering Using Naive Bayes")`
+
+\- Displays the practical heading.
+
+## Step 16: Calculating Accuracy
+
+Line 23:
+
+`print("\nAccuracy:", accuracy_score(y_test, y_pred) * 100, "%")`
+
+- `accuracy_score()` compares actual testing labels with predicted labels.
+- `y_test` contains actual labels.
+- `y_pred` contains predicted labels.
+- Multiplying by 100 converts accuracy into a percentage.
+
+Formula:
+
+\\[ Accuracy = \frac{\text{Correct Predictions}}{\text{Total Predictions}}\times100 \\]
+
+Example:
+
+If 180 out of 200 messages are correctly classified:
+
+\\[ Accuracy = \frac{180}{200}\times100=90\\% \\]
+
+External question: What is accuracy?
+
+Answer: Accuracy is the percentage of total predictions that the model classifies correctly.
+
+## Step 17: Displaying Confusion Matrix
+
+Line 24–25:
+
+```
+print("\nConfusion Matrix:")print(confusion_matrix(y_test, y_pred))
+```
+
+- Displays the confusion matrix.
+- It compares actual labels with predicted labels.
+- It helps identify correct and incorrect classifications.
+
+For binary classification, the matrix contains four values:
+
+|             | Predicted Ham | Predicted Spam |
+| ----------- | ------------- | -------------- |
+| Actual Ham  | TN            | FP             |
+| Actual Spam | FN            | TP             |
+
+Where:
+
+- TN (True Negative): Ham correctly predicted as ham.
+- FP (False Positive): Ham incorrectly predicted as spam.
+- FN (False Negative): Spam incorrectly predicted as ham.
+- TP (True Positive): Spam correctly predicted as spam.
+
+Example:
+
+```
+[[950  10]
+ [ 15  25]]
+```
+
+Assuming the class order is `ham`, then `spam`:
+
+- 950 ham messages correctly classified.
+- 10 ham messages incorrectly classified as spam.
+- 15 spam messages incorrectly classified as ham.
+- 25 spam messages correctly classified.
+
+External question: Why is a confusion matrix used?
+
+Answer: It helps evaluate classification performance by showing correct and incorrect predictions for each class.
+
+## Step 18: Displaying Classification Report
+
+Line 26–27:
+
+```
+print("\nClassification Report:")print(classification_report(y_test, y_pred))
+```
+
+- Displays detailed classification performance.
+- It includes precision, recall, F1-score and support for each class.
+
+Understanding the metrics:
+
+1\. Precision
+
+Precision tells us how many messages predicted as spam were actually spam.
+
+\\[ Precision=\frac{TP}{TP+FP} \\]
+
+2\. Recall
+
+Recall tells us how many actual spam messages were correctly identified.
+
+\\[ Recall=\frac{TP}{TP+FN} \\]
+
+3\. F1-score
+
+F1-score is the harmonic mean of precision and recall.
+
+\\[ F1=2\times\frac{Precision\times Recall}{Precision+Recall} \\]
+
+4\. Support
+
+Support represents the actual number of samples belonging to each class in the testing dataset.
+
+External question: Why is precision important in spam filtering?
+
+Answer: High precision means that fewer legitimate emails are incorrectly marked as spam.
+
+External question: Why is recall important?
+
+Answer: High recall means that the system identifies a larger proportion of actual spam emails.
+
+## Step 19: Accepting a New Email Message
+
+Line 28:
+
+`email = input("\nEnter an email message to check: ")`
+
+- Accepts a new email message from the user.
+- Stores the entered text in the variable `email`.
+- This message will be classified by the trained model.
+
+Example:
+
+```
+Enter an email message to check:
+Congratulations! You won a free prize.
+```
+
+## Step 20: Converting the New Email into Numerical Form
+
+Line 29:
+
+`email_vector = vectorizer.transform([email])`
+
+- Converts the new email into a numerical word-count vector.
+- Uses the vocabulary learned earlier during training.
+- `[email]` places the input string inside a list because the vectorizer expects a collection of documents.
+- `transform()` is used instead of `fit_transform()` because we must use the same vocabulary learned during training.
+
+External question: Why use transform() instead of fit_transform() for a new email?
+
+Answer: Because the model must use the same vocabulary learned during training. Fitting again could create a different feature space.
+
+## Step 21: Predicting the New Email
+
+Line 30:
+
+`prediction = model.predict(email_vector)`
+
+- Passes the numerical email vector to the trained classifier.
+- Predicts whether the message is spam or ham.
+- Stores the result in `prediction`.
+
+## Step 22: Displaying Email Classification
+
+Line 31:
+
+`print("\nEmail Classification:")`
+
+\- Displays the classification heading.
+
+Line 32:
+
+`if prediction[0] == "spam":`
+
+- Checks whether the first predicted label is spam.
+- `prediction[0]` accesses the predicted class because `predict()` returns an array.
+
+Line 33:
+
+`print("Spam Email")`
+
+\- Displays Spam Email if the predicted class is spam.
+
+Line 34–35:
+
+```
+else:    print("Not Spam (Ham) Email")
+```
+
+- Executes when the predicted class is not spam.
+- Displays Not Spam (Ham) Email.
+
+# 4. Complete Output Explanation
+
+The exact output depends on the `spam.csv` dataset and the email entered by the user. The following is an illustrative example.
+
+### Step 1: Model Title
+
+```
+E-mail Spam Filtering Using Naive Bayes
+```
+
+This displays the name of the practical.
+
+### Step 2: Accuracy
+
+```
+Accuracy: 97.5 %
+```
+
+Explanation:
+
+- Accuracy measures how many testing messages were classified correctly.
+- Here, 97.5% of the testing messages were classified correctly.
+- This is an example; your actual accuracy will depend on your dataset and train-test split.
+
+### Step 3: Confusion Matrix
+
+Example:
+
+```
+Confusion Matrix:
+
+[[950  10]
+ [ 15  25]]
+```
+
+Assuming the class order is `ham`, followed by `spam`:
+
+| Actual / Predicted | Ham      | Spam    |
+| ------------------ | -------- | ------- |
+| Ham                | 950 (TN) | 10 (FP) |
+| Spam               | 15 (FN)  | 25 (TP) |
+
+Explanation:
+
+- 950 legitimate messages were correctly classified as ham.
+- 10 legitimate messages were incorrectly classified as spam.
+- 15 spam messages were incorrectly classified as ham.
+- 25 spam messages were correctly classified as spam.
+
+### Step 4: Classification Report
+
+Example:
+
+```
+Classification Report:
+
+              precision    recall  f1-score   support
+
+         ham       0.98      0.99      0.99       960
+        spam       0.71      0.62      0.67        40
+
+    accuracy                           0.97      1000
+   macro avg       0.85      0.81      0.83      1000
+weighted avg       0.97      0.97      0.97      1000
+```
+
+Explanation:
+
+- Precision: How many predicted messages of a class actually belong to that class.
+- Recall: How many actual messages of a class were correctly identified.
+- F1-score: Balance between precision and recall.
+- Support: Number of actual testing samples in each class.
+
+The values above are only illustrative.
+
+### Step 5: Entering a New Email
+
+```
+Enter an email message to check:
+Congratulations! You won a free prize.
+```
+
+The user enters a new email message.
+
+### Step 6: Email Classification
+
+```
+Email Classification:
+Spam Email
+```
+
+Explanation:
+
+- The new email is converted into a numerical vector.
+- The trained Naive Bayes model analyzes its word-count features.
+- It predicts the class as spam.
+- The program displays `Spam Email`.
+
+If the user enters:
+
+```
+Hi, please attend the meeting tomorrow.
+```
+
+The model may display:
+
+```
+Email Classification:
+Not Spam (Ham) Email
+```
+
+The result depends on what the model learned during training.
+
+# 5. Complete AIM-Based Theory
+
+### Q1. What is Spam Filtering?
+
+Spam filtering is the process of identifying unwanted messages and separating them from legitimate messages.
+
+Example: Detecting promotional messages, lottery scams and unwanted bulk emails.
+
+### Q2. What is Naive Bayes?
+
+Naive Bayes is a supervised Machine Learning algorithm based on Bayes' Theorem. It uses probability to classify data into different categories.
+
+### Q3. Why is it called Naive Bayes?
+
+It is called naive because it assumes that features are conditionally independent of each other given the class label.
+
+For example, it treats the words `free`, `offer` and `win` as independent features when calculating the probability of spam, given the class.
+
+### Q4. What is Multinomial Naive Bayes?
+
+Multinomial Naive Bayes is a classification algorithm that works with discrete feature counts, such as the frequency of words in a document.
+
+It is commonly used in:
+
+- Spam filtering.
+- News classification.
+- Sentiment analysis.
+- Document classification.
+
+### Q5. Why do we use Multinomial Naive Bayes instead of Gaussian Naive Bayes?
+
+Multinomial Naive Bayes is suitable for word-count features, whereas Gaussian Naive Bayes is generally used for continuous numerical features that are modeled using a Gaussian distribution.
+
+### Q6. What is CountVectorizer?
+
+CountVectorizer converts text documents into numerical vectors by counting the frequency of each word.
+
+Example:
+
+Input:
+
+```
+I love AI
+I love Python
+```
+
+Vocabulary:
+
+```
+AI, love, Python
+```
+
+Numerical representation:
+
+| Document      | AI | love | Python |
+| ------------- | -- | ---- | ------ |
+| I love AI     | 1  | 1    | 0      |
+| I love Python | 0  | 1    | 1      |
+
+### Q7. What is a Bag of Words?
+
+Bag of Words is a text representation technique that represents a document based on the frequency of words.
+
+It considers word occurrence or count but does not consider grammar or word order.
+
+CountVectorizer implements this approach.
+
+### Q8. What is the difference between CountVectorizer and TF-IDF?
+
+| CountVectorizer          | TF-IDF                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| Counts word occurrences. | Calculates word importance using term frequency and inverse document frequency. |
+| Uses raw word counts.    | Uses weighted numerical values.                                                 |
+| Example: free = 3        | Example: free = 0.75 (illustrative weight)                                      |
+
+### Q9. What is Supervised Learning?
+
+Supervised Learning is a Machine Learning technique in which a model is trained using input data along with known output labels.
+
+Here:
+
+- Input: Email messages.
+- Output: Spam or ham labels.
+
+### Q10. What is the difference between Training and Testing?
+
+| Training                 | Testing                             |
+| ------------------------ | ----------------------------------- |
+| Used to teach the model. | Used to evaluate the trained model. |
+| Uses training data.      | Uses unseen testing data.           |
+| `model.fit()`            | `model.predict()`                   |
+
+### Q11. What is Accuracy?
+
+Accuracy measures the percentage of correctly classified samples among all testing samples.
+
+\\[ Accuracy=\frac{TP+TN}{TP+TN+FP+FN} \\]
+
+### Q12. What is Precision?
+
+Precision measures how many messages predicted as spam are actually spam.
+
+\\[ Precision=\frac{TP}{TP+FP} \\]
+
+### Q13. What is Recall?
+
+Recall measures how many actual spam messages are correctly identified.
+
+\\[ Recall=\frac{TP}{TP+FN} \\]
+
+### Q14. What is F1-score?
+
+F1-score is the harmonic mean of precision and recall.
+
+It is useful when we want to consider both precision and recall.
+
+### Q15. What is a Confusion Matrix?
+
+A confusion matrix is a table that compares actual and predicted classifications.
+
+It contains:
+
+- True Positive
+- True Negative
+- False Positive
+- False Negative
+
+### Q16. What is the difference between False Positive and False Negative?
+
+- False Positive: A legitimate email is incorrectly classified as spam.
+- False Negative: A spam email is incorrectly classified as ham.
+
+In email filtering, a false positive is particularly undesirable because an important legitimate email could be sent to the spam folder.
+
+### Q17. What is `random_state=42`?
+
+It sets a fixed random seed so that the dataset is split consistently when the program is run again with the same data and settings.
+
+The number 42 is arbitrary; other fixed integers can also be used.
+
+### Q18. What is `stratify=y`?
+
+It maintains approximately the same proportion of spam and ham classes in both training and testing datasets.
+
+This is useful when one class has many more samples than the other.
+
+### Q19. What is the difference between `fit_transform()` and `transform()`?
+
+| fit_transform()                          | transform()                                         |
+| ---------------------------------------- | --------------------------------------------------- |
+| Learns the vocabulary and converts text. | Uses an already learned vocabulary to convert text. |
+| Used during feature learning.            | Used for new or testing data.                       |
+| Performs fit and transform together.     | Performs only transformation.                       |
+
+### Q20. What are the applications of Naive Bayes?
+
+1. Email spam filtering.
+2. Sentiment analysis.
+3. News classification.
+4. Document categorization.
+5. Text analytics.
+6. Language classification.
+
+# 6. External Viva Questions and Answers
+
+| No. | Question                                  | Answer                                                            |
+| --- | ----------------------------------------- | ----------------------------------------------------------------- |
+| 1   | What is the aim of this practical?        | To classify emails as spam or ham using Naive Bayes.              |
+| 2   | Which dataset is used?                    | spam.csv                                                          |
+| 3   | Which algorithm is used?                  | Multinomial Naive Bayes.                                          |
+| 4   | What is Naive Bayes?                      | A probabilistic classification algorithm based on Bayes' Theorem. |
+| 5   | Why is it called naive?                   | It assumes conditional independence of features given the class.  |
+| 6   | What is spam?                             | An unwanted or unsolicited email.                                 |
+| 7   | What is ham?                              | A legitimate, non-spam email.                                     |
+| 8   | What is CountVectorizer?                  | A technique that converts text into numerical word counts.        |
+| 9   | What is Bag of Words?                     | A representation of text based on word frequencies.               |
+| 10  | Why is text converted into numbers?       | Machine Learning algorithms require numerical features.           |
+| 11  | What is MultinomialNB()?                  | A Multinomial Naive Bayes classifier.                             |
+| 12  | Why use Multinomial Naive Bayes?          | It is suitable for discrete word-count features.                  |
+| 13  | What is train_test_split()?               | A function that divides data into training and testing sets.      |
+| 14  | What is test_size=0.2?                    | It allocates 20% of the data for testing.                         |
+| 15  | What is random_state?                     | It makes the random split reproducible.                           |
+| 16  | What is stratify=y?                       | It preserves class proportions in the split.                      |
+| 17  | What does fit() do?                       | Trains the model.                                                 |
+| 18  | What does predict() do?                   | Predicts the class of new input data.                             |
+| 19  | What is accuracy?                         | Percentage of correct predictions.                                |
+| 20  | What is precision?                        | Correct positive predictions divided by all predicted positives.  |
+| 21  | What is recall?                           | Correct positive predictions divided by all actual positives.     |
+| 22  | What is F1-score?                         | Harmonic mean of precision and recall.                            |
+| 23  | What is a confusion matrix?               | A table comparing actual and predicted classes.                   |
+| 24  | What is a False Positive?                 | Ham incorrectly classified as spam.                               |
+| 25  | What is a False Negative?                 | Spam incorrectly classified as ham.                               |
+| 26  | What is a sparse matrix?                  | A matrix containing mostly zero values, stored efficiently.       |
+| 27  | Why use encoding="latin-1"?               | To read the dataset using Latin-1 character encoding.             |
+| 28  | What is the use of stop_words="english"?  | Removes common English stop words during vectorization.           |
+| 29  | Why use transform() for a new email?      | To use the vocabulary learned during training.                    |
+| 30  | What are the applications of Naive Bayes? | Spam filtering, sentiment analysis and text classification.       |
+
+# 7. Important Differences for Viva
+
+| Concept          | Meaning                                | Example          |
+| ---------------- | -------------------------------------- | ---------------- |
+| Spam             | Unwanted email                         | Lottery message  |
+| Ham              | Legitimate email                       | Meeting reminder |
+| Naive Bayes      | Probability-based classifier           | Spam prediction  |
+| MultinomialNB    | Naive Bayes for count features         | Word frequencies |
+| CountVectorizer  | Converts text into word counts         | Free → 2         |
+| Bag of Words     | Represents text using word frequencies | Python, AI       |
+| Training Data    | Data used to train the model           | 80%              |
+| Testing Data     | Data used to evaluate the model        | 20%              |
+| Precision        | Correctness of positive predictions    | TP/(TP+FP)       |
+| Recall           | Coverage of actual positive samples    | TP/(TP+FN)       |
+| F1-score         | Balance of precision and recall        | Harmonic mean    |
+| Confusion Matrix | Actual vs predicted classes            | TP, TN, FP, FN   |
+
+# 8. Quick Revision Before Practical
+
+| Function / Code           | Purpose                                      |
+| ------------------------- | -------------------------------------------- |
+| `pd.read_csv()`           | Loads CSV dataset                            |
+| `df.iloc[:, :2]`          | Selects first two columns                    |
+| `df.columns`              | Accesses column names                        |
+| `df.dropna()`             | Removes missing-value rows                   |
+| `str.lower()`             | Converts labels to lowercase                 |
+| `str.strip()`             | Removes extra spaces                         |
+| `isin()`                  | Filters specified values                     |
+| `train_test_split()`      | Splits dataset                               |
+| `CountVectorizer()`       | Converts text into word counts               |
+| `fit_transform()`         | Learns vocabulary and transforms text        |
+| `transform()`             | Transforms new text using learned vocabulary |
+| `MultinomialNB()`         | Creates classifier                           |
+| `model.fit()`             | Trains the classifier                        |
+| `model.predict()`         | Predicts classes                             |
+| `accuracy_score()`        | Calculates accuracy                          |
+| `confusion_matrix()`      | Displays classification results              |
+| `classification_report()` | Displays precision, recall and F1-score      |
+| `prediction[0]`           | Gets the first predicted class               |
+
+# 9. Explain This Practical to the External Examiner
+
+You can explain it like this:
+
+"This practical implements an email spam filtering system using the Multinomial Naive Bayes algorithm. First, we load the spam dataset using Pandas and preprocess it by selecting the required columns, removing missing values and cleaning the labels. We separate the email messages as input features and spam or ham labels as target values. Then, we use CountVectorizer to convert the text messages into numerical word-count vectors. We divide the dataset into 80% training and 20% testing data using train_test_split. Next, we train the Multinomial Naive Bayes classifier using the training data. We evaluate the model using accuracy, confusion matrix and classification report. Finally, we accept a new email from the user, convert it into a numerical vector and predict whether it is spam or ham."
+
+# 10. Important Technical Points and Limitations
+
+These are useful if the external examiner asks questions beyond the code.
+
+### 1. Why is CountVectorizer used before training?
+
+Machine Learning algorithms cannot directly process raw text in this model. CountVectorizer converts words into numerical features.
+
+### 2. Why is Multinomial Naive Bayes suitable?
+
+It is designed for discrete count-based features, such as the number of times words occur in an email.
+
+### 3. Why is `stratify=y` important?
+
+Spam datasets may contain many more ham messages than spam messages. Stratification helps maintain the original class proportions in both sets.
+
+### 4. Does this code use stemming or lemmatization?
+
+No. It removes English stop words through CountVectorizer, but it does not perform stemming or lemmatization.
+
+### 5. Does this code use TF-IDF?
+
+No. It uses CountVectorizer, which represents words using their counts rather than TF-IDF weights.
+
+### 6. Important improvement: Avoiding data leakage
+
+In your current code, this line:
+
+```
+X = vectorizer.fit_transform(X)
+```
+
+is executed before splitting the data.
+
+That means the vocabulary is learned using both training and testing messages. This introduces a small form of data leakage.
+
+The recommended approach is:
+
+1. Split the raw text and labels first.
+2. Fit CountVectorizer only on training messages.
+3. Transform the testing messages using the same vectorizer.
+
+Conceptually:
+
+```
+X_train, X_test, y_train, y_test = train_test_split(    X, y, test_size=0.2, random_state=42, stratify=y)X_train = vectorizer.fit_transform(X_train)X_test = vectorizer.transform(X_test)
+```
+
+The remaining model training and evaluation steps can stay the same.
+
+Viva question: What is data leakage?
+
+Answer: Data leakage occurs when information from the testing data is used during model training or preprocessing, resulting in an overly optimistic evaluation.
+
+### 7. Does high accuracy always mean a good spam filter?
+
+No. If a dataset contains mostly ham messages, a model can achieve high accuracy while failing to identify many spam messages.
+
+Therefore, precision, recall and F1-score are also important.
+
+## 11. Most Important Questions to Prepare First
+
+If you have limited time, prepare these first:
+
+1. What is Naive Bayes?
+2. Why is it called Naive Bayes?
+3. What is Multinomial Naive Bayes?
+4. What is Bayes' Theorem?
+5. What is spam and ham?
+6. What is CountVectorizer?
+7. What is Bag of Words?
+8. Why do we convert text into numerical vectors?
+9. What is the difference between `fit_transform()` and `transform()`?
+10. Why do we split data into training and testing?
+11. What is the use of `stratify=y`?
+12. What is a confusion matrix?
+13. What are TP, TN, FP and FN?
+14. What is the difference between precision and recall?
+15. What is F1-score?
+16. Why is Multinomial Naive Bayes suitable for text classification?
+17. What is data leakage?
+
+The most important concept to understand: Your program converts email text into numerical word counts, learns the relationship between words and spam/ham labels using Multinomial Naive Bayes, and then uses the trained model to classify new email messages.
